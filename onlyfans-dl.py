@@ -13,26 +13,25 @@ from datetime import datetime, timedelta
 # CONFIGURATIONS     #
 ######################
 
+#Session Variables (update every time you login or your browser updates)
+USER_ID = ""
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0"
+X_BC = ""
+SESS = ""
+
+#Options
+ALBUMS = True # Separate photos into subdirectories by post/album (Single photo posts are not put into subdirectories)
+USE_SUB_FOLDERS = True # use content type subfolders (messgaes/archived/stories/purchased), or download everything to /profile/photos and /profile/videos
+
 # content types to download
 VIDEOS = True
 PHOTOS = True
-ALBUMS = True # Separate photos into subdirectories by post/album (uses post date and ID for folder name) (Single photo posts are not put into subdirectories)
 POSTS = True
-ARCHIVED = True
 STORIES = True
 MESSAGES = True
+ARCHIVED = True
 PURCHASED = True
-USE_SUB_FOLDERS = True # use content type subfolders (messgaes/archived/stories/purchased), or download everything to /profile/photos and /profile/videos
-API_HEADER = {
-	"Accept": "application/json, text/plain, */*",
-	"Accept-Encoding": "gzip, deflate",
-	"app-token": "33d57ade8c02dbc5a333db99ff9ae26a",
-	#Set the following
-	"user-id": "#", #set once, static
-	"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0", #Change immediately when browser updates, or it will log you out
-	"x-bc": "#", #changes on login
-	"Cookie": "sess=#" #changes on login (keep "sess=" part)
-}
+
 ######################
 # END CONFIGURATIONS #
 ######################
@@ -40,6 +39,15 @@ API_HEADER = {
 API_URL = "https://onlyfans.com/api2/v2"
 new_files = 0
 MAX_AGE = 0
+API_HEADER = {
+	"Accept": "application/json, text/plain, */*",
+	"Accept-Encoding": "gzip, deflate",
+	"app-token": "33d57ade8c02dbc5a333db99ff9ae26a",
+	"user-id": USER_ID,
+	"User-Agent": USER_AGENT,
+	"x-bc": X_BC,
+	"Cookie": "sess=" + SESS
+}
 
 def create_signed_headers(link, queryParams):
 	global API_HEADER
@@ -48,7 +56,7 @@ def create_signed_headers(link, queryParams):
 		query = '&'.join('='.join((key,val)) for (key,val) in queryParams.items())
 		path = f"{path}?{query}"
 	unixtime = str(int(datetime.now().timestamp()))
-	msg = "\n".join([dynamic_rules["static_param"], unixtime, path, API_HEADER["user-id"]])
+	msg = "\n".join([dynamic_rules["static_param"], unixtime, path, USER_ID])
 	message = msg.encode("utf-8")
 	hash_object = hashlib.sha1(message)
 	sha_1_sign = hash_object.hexdigest()
