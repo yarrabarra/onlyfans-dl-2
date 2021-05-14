@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 USER_ID = ""
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0"
 X_BC = ""
-SESS = ""
+SESS_COOKIE = ""
 
 #Options
 ALBUMS = True # Separate photos into subdirectories by post/album (Single photo posts are not put into subdirectories)
@@ -46,7 +46,7 @@ API_HEADER = {
 	"user-id": USER_ID,
 	"User-Agent": USER_AGENT,
 	"x-bc": X_BC,
-	"Cookie": "sess=" + SESS
+	"Cookie": "sess=" + SESS_COOKIE
 }
 
 def create_signed_headers(link, queryParams):
@@ -68,7 +68,7 @@ def create_signed_headers(link, queryParams):
 
 
 def api_request(endpoint, getuserinfo = False):
-	posts_limit = 10
+	posts_limit = 100
 	getParams = { "app-token": "33d57ade8c02dbc5a333db99ff9ae26a", "limit": str(posts_limit), "order": "publish_date_asc"}
 	if(MAX_AGE):
 		getParams['afterPublishTime'] = str(MAX_AGE) + ".000000"
