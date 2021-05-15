@@ -9,8 +9,10 @@ A subdirectory structure will be built depending on the options set.\
 Any existing media will be skipped, not redownloaded.\
 Content will be named as DATE_ID (e.g. 2021-04-17_123456.jpg)
 
+I have added both header signing authentication methods, so if one fails it will try the other method automatically.
+
 #### Requires
-Requires Python3.9 and 'requests': `python -m pip install requests`
+Requires Python3 and 'requests': `python -m pip install requests`
 
 ## Features
 * Choose what type of content to download (photos, videos, posts, stories, messages, purchases, archived)
