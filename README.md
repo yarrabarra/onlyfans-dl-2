@@ -20,8 +20,7 @@ Requires Python3.9 and 'requests': `python -m pip install requests`
 
 #### ToDo
 Add "all" profile to dynamically get list of subscribed profiles, and download recent updates from them all.\
-Add python library requirements file.\
-Move session variables into separate config file.
+Add python library requirements file.
 
 ## Usage
 First make sure to set your session variables in the script and configure your options.
