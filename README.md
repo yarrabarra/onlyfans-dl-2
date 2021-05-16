@@ -2,8 +2,6 @@
 This tool downloads all photos/videos from an OnlyFans profile, creating a local archive.\
 You must be subscribed to the profile to download their content.
 
-A fork of [onlyfans-dl](https://github.com/k0rnh0li0/onlyfans-dl) with more features and options!
-
 onlyfans-dl will create a directory named after the profile in the current working directory.\
 A subdirectory structure will be built depending on the options set.\
 Any existing media will be skipped, not redownloaded.\
@@ -22,7 +20,8 @@ Requires Python3 and 'requests': `python -m pip install requests`
 
 #### ToDo
 Add "all" profile to dynamically get list of subscribed profiles, and download recent updates from them all.\
-Add python library requirements file.
+Add python library requirements file.\
+A post with a single photo and video shouldn't be considered an album.
 
 ## Usage
 First make sure to set your session variables in the script and configure your options.
