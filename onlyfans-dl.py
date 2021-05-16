@@ -70,38 +70,46 @@ def create_signed_headers(link, queryParams):
 	return
 
 
-def api_request(endpoint, getuserinfo = False):
+def api_request(endpoint, apiType):
 	posts_limit = 100
 	getParams = { "app-token": "33d57ade8c02dbc5a333db99ff9ae26a", "limit": str(posts_limit), "order": "publish_date_asc"}
-	if(MAX_AGE):
+	if(apiType == 'messages'):
+		getParams['order'] = 'asc'
+	if(MAX_AGE and apiType != 'purchased'): #Purchased posts cannot be limited by age AFAIK
 		getParams['afterPublishTime'] = str(MAX_AGE) + ".000000"
 	create_signed_headers(endpoint, getParams)
-	if getuserinfo:
+	if apiType == 'user-info':
 		return requests.get(API_URL + endpoint, headers=API_HEADER, params=getParams)
 	list_base = requests.get(API_URL + endpoint, headers=API_HEADER, params=getParams).json()
 
 	# Fixed the issue with the maximum limit of 10 posts by creating a kind of "pagination"
 	if len(list_base) >= posts_limit:
-		getParams['afterPublishTime'] = list_base[len(list_base)-1]['postedAtPrecise']
+		if(apiType == 'purchased'):
+			getParams['offset'] = posts_limit #If the limit for purchased posts is lower than for posts, this won't work. But I can't test it
+		else:
+			getParams['afterPublishTime'] = list_base[len(list_base)-1]['postedAtPrecise']
 		while 1:
 			create_signed_headers(endpoint, getParams)
 			list_extend = requests.get(API_URL + endpoint, headers=API_HEADER, params=getParams).json()
 			list_base.extend(list_extend) # Merge with previous posts
 			if len(list_extend) < posts_limit:
 				break
-			getParams['afterPublishTime'] = list_extend[len(list_extend)-1]['postedAtPrecise']
+			if(apiType == 'purchased'):
+				getParams['offset'] = int(getParams['offset']) + posts_limit
+			else:
+				getParams['afterPublishTime'] = list_extend[len(list_extend)-1]['postedAtPrecise']
 	return list_base
 
 
 def get_user_info(profile):
 	# <profile> = "me" -> info about yourself
-	info = api_request("/users/" + profile, True).json()
+	info = api_request("/users/" + profile, 'user-info').json()
 	if "error" in info:
 		global USER_ID, API_HEADER
 		USER_ID = "0"
 		API_HEADER.pop('user-id', None)
 		print('\nUSER_ID auth failed, trying without it...\n(if this persists you can comment out the USER_ID varable)')
-		info = api_request("/users/" + profile, True).json()
+		info = api_request("/users/" + profile, 'user-info').json()
 		if "error" in info:
 			print("\nERROR: " + info["error"]["message"])
 			exit()
@@ -109,7 +117,13 @@ def get_user_info(profile):
 
 
 def download_media(media, subtype, album = False):
-	filename = str(media["createdAt"][:10]) + "_" + str(media["id"])
+	if('createdAt' in media): #posts
+		filename = str(media["createdAt"][:10]) + "_" + str(media["id"])
+	else: #messages,paid
+		if(album):
+			filename = album[:10] + "_" + str(media["id"])
+		else:
+			filename = str(media["id"])
 	source = media["source"]["source"]
 
 	if (media["type"] != "photo" and media["type"] != "video") or not media['canView']:
@@ -119,7 +133,7 @@ def download_media(media, subtype, album = False):
 
 	extension = source.split('?')[0].split('.')
 	ext = '.' + extension[len(extension)-1]
-	if len(ext) < 2:
+	if len(ext) < 3:
 		return
 
 	if ALBUMS and album and media["type"] == "photo":
@@ -132,7 +146,7 @@ def download_media(media, subtype, album = False):
 	if not os.path.isdir(PROFILE + os.path.dirname(path)):
 		pathlib.Path(PROFILE + os.path.dirname(path)).mkdir(parents=True, exist_ok=True)
 	if not os.path.isfile(PROFILE + path):
-		#print(PROFILE + path)
+		print(PROFILE + path)
 		global new_files
 		new_files += 1
 		r = requests.get(source, stream=True)
@@ -142,20 +156,28 @@ def download_media(media, subtype, album = False):
 
 
 def get_content(MEDIATYPE, API_LOCATION):
-	posts = api_request(API_LOCATION)
+	posts = api_request(API_LOCATION,MEDIATYPE)
+	if "error" in posts:
+		print("\nERROR: " + posts["error"]["message"])
+		exit()
+	if MEDIATYPE == "messages":
+		posts = posts['list']
 	if len(posts) > 0:
 		print("Found " + str(len(posts)) + " " + MEDIATYPE)
 		for post in posts:
-			if "canViewMedia" not in post or not post["canViewMedia"]:
+			if ("canViewMedia" in post and not post["canViewMedia"]):
 				continue
 			if MEDIATYPE == "purchased" and post["fromUser"]["username"] != PROFILE:
 				continue # Only get paid posts from PROFILE
 			if len(post["media"]) > 1: # Don't put single photo posts in a subfolder
-				album = str(post["postedAt"][:10]) + "_" + str(post["id"])
+				if('postedAt' in post):
+					album = str(post["postedAt"][:10]) + "_" + str(post["id"])
+				else:
+					album = str(post["createdAt"][:10]) + "_" + str(post["id"])
 			else:
 				album = False
 			for media in post["media"]:
-				if "source" in media:
+				if "source" in media and ("canView" not in media or media["canView"]):
 					download_media(media, MEDIATYPE, album)
 		global new_files
 		print("Downloaded " + str(new_files) + " new " + MEDIATYPE)
@@ -170,7 +192,7 @@ if __name__ == "__main__":
 		print("Update User Agent: https://ipchicken.com/\n")
 		exit()
 	
-	#Get the rules for the signed headers dynamically, as OF has made these fluid to try to create download fatigue for scripts like this
+	#Get the rules for the signed headers dynamically, so we don't have to update the script every time they change
 	dynamic_rules = requests.get('https://raw.githubusercontent.com/DATAHOARDERS/dynamic-rules/main/onlyfans.json').json()
 	PROFILE = sys.argv[1]
 	PROFILE_ID = str(get_user_info(PROFILE)["id"])
@@ -193,3 +215,4 @@ if __name__ == "__main__":
 		get_content("messages", "/chats/" + PROFILE_ID + "/messages")
 	if PURCHASED:
 		get_content("purchased", "/posts/paid")
+
