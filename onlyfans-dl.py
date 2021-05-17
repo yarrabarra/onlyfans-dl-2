@@ -178,10 +178,12 @@ def get_content(MEDIATYPE, API_LOCATION):
 			if MEDIATYPE == "purchased" and ('fromUser' not in post or post["fromUser"]["username"] != PROFILE):
 				continue # Only get paid posts from PROFILE
 			if len(post["media"]) > 1: # Don't put single photo posts in a subfolder
-				if('postedAt' in post):
+				if 'postedAt' in post:
 					album = str(post["postedAt"][:10]) + "_" + str(post["id"])
-				else:
+				elif 'createdAt' in post:
 					album = str(post["createdAt"][:10]) + "_" + str(post["id"])
+				else:
+					album = False
 			else:
 				album = False
 			for media in post["media"]:
