@@ -77,15 +77,15 @@ def api_request(endpoint, apiType):
 		getParams['order'] = 'asc'
 	if apiType == 'subscriptions':
 		getParams['type'] = 'active'
-	if MAX_AGE and apiType != 'purchased': #Purchased posts cannot be limited by age AFAIK
+	if MAX_AGE and apiType != 'purchased' and apiType != 'subscriptions': #Cannot be limited by age
 		getParams['afterPublishTime'] = str(MAX_AGE) + ".000000"
 	create_signed_headers(endpoint, getParams)
 	list_base = requests.get(API_URL + endpoint, headers=API_HEADER, params=getParams).json()
 
-	# Fixed the issue with the maximum limit of 10 posts by creating a kind of "pagination"
-	if len(list_base) >= posts_limit:
+	# Fixed the issue with the maximum limit of 100 posts by creating a kind of "pagination"
+	if len(list_base) >= posts_limit and apiType != 'user-info':
 		if apiType == 'purchased' or apiType == 'subscriptions':
-			getParams['offset'] = posts_limit #If the limit for purchased posts is lower than for posts, this won't work. But I can't test it
+			getParams['offset'] = str(posts_limit) #If the limit for purchased posts is lower than for posts, this won't work. But I can't test it
 		else:
 			getParams['afterPublishTime'] = list_base[len(list_base)-1]['postedAtPrecise']
 		while 1:
@@ -95,7 +95,7 @@ def api_request(endpoint, apiType):
 			if len(list_extend) < posts_limit:
 				break
 			if apiType == 'purchased' or apiType == 'subscriptions':
-				getParams['offset'] = int(getParams['offset']) + posts_limit
+				getParams['offset'] = str(int(getParams['offset']) + posts_limit)
 			else:
 				getParams['afterPublishTime'] = list_extend[len(list_extend)-1]['postedAtPrecise']
 	return list_base
