@@ -5,7 +5,7 @@ You must be subscribed to the profile to download their content.
 onlyfans-dl will create a directory named after the profile in the current working directory.\
 A subdirectory structure will be built depending on the options set.\
 Any existing media will be skipped, not redownloaded.\
-Content will be named as DATE_ID (e.g. 2021-04-17_123456.jpg)
+Content will be named as DATE_ID.EXT (e.g. 2021-04-17_123456.jpg)
 
 I have added both header signing authentication methods, so if one fails it will try the other method automatically.
 
@@ -17,18 +17,18 @@ Requires Python3 and 'requests': `python -m pip install requests`
 * Choose to create subfolders for each of the above, or combine them all into one folder
 * Choose to sort posts with more than one photo into "albums" (subfolders)
 * Download everything, or only the last &lt;integer&gt; days of content
+* Specify multiple profiles at once or use "all" keyword to get subscriptions dynamically
 
 #### ToDo
-Add "all" profile to dynamically get list of subscribed profiles, and download recent updates from them all.\
 Add python library requirements file.\
 A post with a single photo and video shouldn't be considered an album.
 
 ## Usage
 First make sure to set your session variables in the script and configure your options.
 
-`./onlyfans-dl.py <profile> [optional: max age (integer)]`
-* `<profile>` - the username of the profile to download
-* `[max age]` - Optional: Only get posts from the last &lt;integer&gt; days
+`./onlyfans-dl.py <profiles / all> [optional: max age (integer)]`
+* `<profiles>` - the usernames of profiles to download. Use "all" to get all currently subscribed profiles
+* `[max age]` - Optional: Only get posts from the last &lt;integer&gt; days (Messages/Paid not affected)
 
 ## Session Variables
 Requests to the API now need to be signed. This is an obfuscation technique from the developers to discourage scraping. Thanks for the most recent patch goes to [DIGITALCRIMINAL](https://github.com/DIGITALCRIMINAL/OnlyFans).
