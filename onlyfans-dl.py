@@ -55,7 +55,7 @@ else:
 def create_signed_headers(link, queryParams):
 	global API_HEADER
 	path = "/api2/v2" + link
-	if(queryParams):
+	if queryParams:
 		query = '&'.join('='.join((key,val)) for (key,val) in queryParams.items())
 		path = f"{path}?{query}"
 	unixtime = str(int(datetime.now().timestamp()))
@@ -73,18 +73,18 @@ def create_signed_headers(link, queryParams):
 def api_request(endpoint, apiType):
 	posts_limit = 100
 	getParams = { "app-token": "33d57ade8c02dbc5a333db99ff9ae26a", "limit": str(posts_limit), "order": "publish_date_asc"}
-	if(apiType == 'messages'):
+	if apiType == 'messages':
 		getParams['order'] = 'asc'
-	if(MAX_AGE and apiType != 'purchased'): #Purchased posts cannot be limited by age AFAIK
+	if apiType == 'subscriptions':
+		getParams['type'] = 'active'
+	if MAX_AGE and apiType != 'purchased': #Purchased posts cannot be limited by age AFAIK
 		getParams['afterPublishTime'] = str(MAX_AGE) + ".000000"
 	create_signed_headers(endpoint, getParams)
-	if apiType == 'user-info':
-		return requests.get(API_URL + endpoint, headers=API_HEADER, params=getParams)
 	list_base = requests.get(API_URL + endpoint, headers=API_HEADER, params=getParams).json()
 
 	# Fixed the issue with the maximum limit of 10 posts by creating a kind of "pagination"
 	if len(list_base) >= posts_limit:
-		if(apiType == 'purchased'):
+		if apiType == 'purchased' or apiType == 'subscriptions':
 			getParams['offset'] = posts_limit #If the limit for purchased posts is lower than for posts, this won't work. But I can't test it
 		else:
 			getParams['afterPublishTime'] = list_base[len(list_base)-1]['postedAtPrecise']
@@ -94,7 +94,7 @@ def api_request(endpoint, apiType):
 			list_base.extend(list_extend) # Merge with previous posts
 			if len(list_extend) < posts_limit:
 				break
-			if(apiType == 'purchased'):
+			if apiType == 'purchased' or apiType == 'subscriptions':
 				getParams['offset'] = int(getParams['offset']) + posts_limit
 			else:
 				getParams['afterPublishTime'] = list_extend[len(list_extend)-1]['postedAtPrecise']
@@ -103,17 +103,25 @@ def api_request(endpoint, apiType):
 
 def get_user_info(profile):
 	# <profile> = "me" -> info about yourself
-	info = api_request("/users/" + profile, 'user-info').json()
+	info = api_request("/users/" + profile, 'user-info')
 	if "error" in info:
 		global USER_ID, API_HEADER
 		USER_ID = "0"
 		API_HEADER.pop('user-id', None)
-		print('\nUSER_ID auth failed, trying without it...\n(if this persists you can comment out the USER_ID varable)')
+		print('\nUSER_ID auth failed, trying without it...\n(if this persists you can comment out the USER_ID variable)')
 		info = api_request("/users/" + profile, 'user-info').json()
 		if "error" in info:
 			print("\nERROR: " + info["error"]["message"])
 			exit()
 	return info
+
+
+def get_subscriptions():
+	subs = api_request("/subscriptions/subscribes", "subscriptions")
+	if "error" in subs:
+		print("\nSUBSCRIPTIONS ERROR: " + info["error"]["message"])
+		exit()
+	return [row['username'] for row in subs]
 
 
 def download_media(media, subtype, album = False):
@@ -186,33 +194,38 @@ def get_content(MEDIATYPE, API_LOCATION):
 
 if __name__ == "__main__":
 	if len(sys.argv) < 2:
-		print("\nUsage: ./onlyfans-dl.py <profile> [optional: only get last <integer> days of posts]\n")
-		print("Make sure to update the session variables at the top of this script")
-		print("Get OF 'sess' Cookie from dev console\nGet x-bc and user-id HTTP headers from dev console")
+		print("\nUsage: " + sys.argv[0] + " <list of profiles / all> [optional: only get last <integer> days of posts]\n")
+		print("Make sure to update the session variables at the top of this script\nSee readme for instructions")
 		print("Update User Agent: https://ipchicken.com/\n")
 		exit()
 	
 	#Get the rules for the signed headers dynamically, so we don't have to update the script every time they change
 	dynamic_rules = requests.get('https://raw.githubusercontent.com/DATAHOARDERS/dynamic-rules/main/onlyfans.json').json()
-	PROFILE = sys.argv[1]
-	PROFILE_ID = str(get_user_info(PROFILE)["id"])
+	PROFILE_LIST = sys.argv
+	PROFILE_LIST.pop(0)
+	if(len(PROFILE_LIST) > 1 and PROFILE_LIST[-1].isnumeric()):
+		MAX_AGE = int((datetime.today() - timedelta(int(PROFILE_LIST.pop(-1)))).strftime("%s"))
+		print("\nGetting posts newer than " + str(datetime.utcfromtimestamp(int(MAX_AGE))) + " UTC")
 
-	if os.path.isdir(PROFILE):
-		print("\n" + PROFILE + " exists.\nDownloading new media, skipping pre-existing.")
-	else:
-		print("\nDownloading content to " + PROFILE)
-	if(len(sys.argv) >= 3 and sys.argv[2].isnumeric()):
-		MAX_AGE = int((datetime.today() - timedelta(int(sys.argv[2]))).strftime("%s"))
-		print("\nGetting posts newer than " + str(datetime.utcfromtimestamp(int(MAX_AGE))) + " UTC\n")
+	if(PROFILE_LIST[0] == "all"):
+		PROFILE_LIST = get_subscriptions()
 
-	if POSTS:
-		get_content("posts", "/users/" + PROFILE_ID + "/posts")
-	if ARCHIVED:
-		get_content("archived", "/users/" + PROFILE_ID + "/posts/archived")
-	if STORIES:
-		get_content("stories", "/users/" + PROFILE_ID + "/stories")
-	if MESSAGES:
-		get_content("messages", "/chats/" + PROFILE_ID + "/messages")
-	if PURCHASED:
-		get_content("purchased", "/posts/paid")
+	for PROFILE in PROFILE_LIST:
+		PROFILE_ID = str(get_user_info(PROFILE)["id"])
+		if os.path.isdir(PROFILE):
+			print("\n" + PROFILE + " exists.\nDownloading new media, skipping pre-existing.")
+		else:
+			print("\nDownloading content to " + PROFILE)
+
+		if POSTS:
+			get_content("posts", "/users/" + PROFILE_ID + "/posts")
+		if ARCHIVED:
+			get_content("archived", "/users/" + PROFILE_ID + "/posts/archived")
+		if STORIES:
+			get_content("stories", "/users/" + PROFILE_ID + "/stories")
+		if MESSAGES:
+			get_content("messages", "/chats/" + PROFILE_ID + "/messages")
+		if PURCHASED:
+			get_content("purchased", "/posts/paid")
+
 
