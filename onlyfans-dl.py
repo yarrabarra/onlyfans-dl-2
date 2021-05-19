@@ -157,10 +157,11 @@ def download_media(media, subtype, album = False):
 		print(PROFILE + path)
 		global new_files
 		new_files += 1
-		r = requests.get(source, stream=True)
+		r = requests.get(source, timeout=(4,None))
 		with open(PROFILE + path, 'wb') as f:
 			r.raw.decode_content = True
 			shutil.copyfileobj(r.raw, f)
+		r.close()
 
 
 def get_content(MEDIATYPE, API_LOCATION):
