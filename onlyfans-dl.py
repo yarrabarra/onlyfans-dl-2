@@ -110,7 +110,7 @@ def get_user_info(profile):
 		USER_ID = "0"
 		API_HEADER.pop('user-id', None)
 		print('\nUSER_ID auth failed, trying without it...\n(if this persists you can comment out the USER_ID variable)')
-		info = api_request("/users/" + profile, 'user-info').json()
+		info = api_request("/users/" + profile, 'user-info')
 		if "error" in info:
 			print("\nERROR: " + info["error"]["message"])
 			exit()
