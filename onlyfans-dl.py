@@ -183,7 +183,7 @@ def get_content(MEDIATYPE, API_LOCATION):
 	if len(posts) > 0:
 		print("Found " + str(len(posts)) + " " + MEDIATYPE)
 		for post in posts:
-			if ("canViewMedia" in post and not post["canViewMedia"]):
+			if "media" not in post or ("canViewMedia" in post and not post["canViewMedia"]):
 				continue
 			if MEDIATYPE == "purchased" and ('fromUser' not in post or post["fromUser"]["username"] != PROFILE):
 				continue # Only get paid posts from PROFILE
