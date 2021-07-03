@@ -123,7 +123,7 @@ def get_user_info(profile):
 def get_subscriptions():
 	subs = api_request("/subscriptions/subscribes", "subscriptions")
 	if "error" in subs:
-		print("\nSUBSCRIPTIONS ERROR: " + info["error"]["message"])
+		print("\nSUBSCRIPTIONS ERROR: " + subs["error"]["message"])
 		exit()
 	return [row['username'] for row in subs]
 
