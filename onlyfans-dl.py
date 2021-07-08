@@ -219,7 +219,7 @@ if __name__ == "__main__":
 	PROFILE_LIST = sys.argv
 	PROFILE_LIST.pop(0)
 	if(len(PROFILE_LIST) > 1 and PROFILE_LIST[-1].isnumeric()):
-		MAX_AGE = int((datetime.today() - timedelta(int(PROFILE_LIST.pop(-1)))).strftime("%s"))
+		MAX_AGE = int((datetime.today() - timedelta(int(PROFILE_LIST.pop(-1)))).timestamp())
 		print("\nGetting posts newer than " + str(datetime.utcfromtimestamp(int(MAX_AGE))) + " UTC")
 
 	if(PROFILE_LIST[0] == "all"):
