@@ -48,7 +48,7 @@ API_HEADER = {
 	"x-bc": X_BC,
 	"Cookie": "auh_id=0; sess=" + SESS_COOKIE
 }
-if('USER_ID' in globals() and USER_ID):
+if 'USER_ID' in globals() and USER_ID:
 	API_HEADER['user-id'] = USER_ID
 else:
 	USER_ID = "0"
@@ -129,10 +129,10 @@ def get_subscriptions():
 
 
 def download_media(media, subtype, album = False):
-	if('createdAt' in media): #posts
+	if 'createdAt' in media: #posts
 		filename = str(media["createdAt"][:10]) + "_" + str(media["id"])
 	else: #messages,paid
-		if(album):
+		if album:
 			filename = album[:10] + "_" + str(media["id"])
 		else:
 			filename = str(media["id"])
@@ -200,7 +200,7 @@ def get_content(MEDIATYPE, API_LOCATION):
 			else:
 				album = False
 			for media in post["media"]:
-				if "source" in media and ("canView" not in media or media["canView"]):
+				if "source" in media and "source" in media["source"] and media["source"]["source"] and ("canView" not in media or media["canView"]):
 					download_media(media, MEDIATYPE, album)
 		global new_files
 		print("Downloaded " + str(new_files) + " new " + MEDIATYPE)
@@ -218,11 +218,11 @@ if __name__ == "__main__":
 	dynamic_rules = requests.get('https://raw.githubusercontent.com/DATAHOARDERS/dynamic-rules/main/onlyfans.json').json()
 	PROFILE_LIST = sys.argv
 	PROFILE_LIST.pop(0)
-	if(len(PROFILE_LIST) > 1 and PROFILE_LIST[-1].isnumeric()):
+	if len(PROFILE_LIST) > 1 and PROFILE_LIST[-1].isnumeric():
 		MAX_AGE = int((datetime.today() - timedelta(int(PROFILE_LIST.pop(-1)))).timestamp())
 		print("\nGetting posts newer than " + str(datetime.utcfromtimestamp(int(MAX_AGE))) + " UTC")
 
-	if(PROFILE_LIST[0] == "all"):
+	if PROFILE_LIST[0] == "all":
 		PROFILE_LIST = get_subscriptions()
 
 	for PROFILE in PROFILE_LIST:
@@ -242,5 +242,3 @@ if __name__ == "__main__":
 			get_content("messages", "/chats/" + PROFILE_ID + "/messages")
 		if PURCHASED:
 			get_content("purchased", "/posts/paid")
-
-
