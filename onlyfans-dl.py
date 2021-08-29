@@ -16,12 +16,12 @@ requests.urllib3.disable_warnings()
 
 #Session Variables (update every time you login or your browser updates)
 USER_ID = ""
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0"
+USER_AGENT = ""
 X_BC = ""
 SESS_COOKIE = ""
 
 #Options
-ALBUMS = True # Separate photos into subdirectories by post/album (Single photo posts are not put into subdirectories)
+ALBUMS = False # Separate photos into subdirectories by post/album (Single photo posts are not put into subdirectories)
 USE_SUB_FOLDERS = True # use content type subfolders (messgaes/archived/stories/purchased), or download everything to /profile/photos and /profile/videos
 
 # content types to download
@@ -94,9 +94,12 @@ def api_request(endpoint, apiType):
 			list_extend = requests.get(API_URL + endpoint, headers=API_HEADER, params=getParams).json()
 			if apiType == 'messages':
 				list_base['list'].extend(list_extend['list'])
-			else:
-				list_base.extend(list_extend) # Merge with previous posts
-			if (apiType == 'messages' and list_extend['hasMore'] == False) or len(list_extend) < posts_limit:
+				if list_extend['hasMore'] == False or len(list_extend['list']) < posts_limit:
+					break
+				getParams['offset'] = str(len(list_base['list']))
+				continue
+			list_base.extend(list_extend) # Merge with previous posts
+			if len(list_extend) < posts_limit:
 				break
 			if apiType == 'purchased' or apiType == 'subscriptions':
 				getParams['offset'] = str(int(getParams['offset']) + posts_limit)
