@@ -21,7 +21,7 @@ X_BC = ""
 SESS_COOKIE = ""
 
 #Options
-ALBUMS = False # Separate photos into subdirectories by post/album (Single photo posts are not put into subdirectories)
+ALBUMS = True # Separate photos into subdirectories by post/album (Single photo posts are not put into subdirectories)
 USE_SUB_FOLDERS = True # use content type subfolders (messgaes/archived/stories/purchased), or download everything to /profile/photos and /profile/videos
 
 # content types to download
@@ -78,8 +78,9 @@ def api_request(endpoint, apiType):
 		getParams['order'] = 'asc'
 	if apiType == 'subscriptions':
 		getParams['type'] = 'active'
-	if MAX_AGE and apiType != 'purchased' and apiType != 'subscriptions': #Cannot be limited by age
+	if MAX_AGE and apiType != 'messages' and apiType != 'purchased' and apiType != 'subscriptions': #Cannot be limited by age
 		getParams['afterPublishTime'] = str(MAX_AGE) + ".000000"
+		#Messages can only be limited by offset or last message ID. This requires its own separate function. TODO
 	create_signed_headers(endpoint, getParams)
 	list_base = requests.get(API_URL + endpoint, headers=API_HEADER, params=getParams).json()
 
@@ -131,14 +132,8 @@ def get_subscriptions():
 	return [row['username'] for row in subs]
 
 
-def download_media(media, subtype, album = False):
-	if 'createdAt' in media: #posts
-		filename = str(media["createdAt"][:10]) + "_" + str(media["id"])
-	else: #messages,paid
-		if album:
-			filename = album[:10] + "_" + str(media["id"])
-		else:
-			filename = str(media["id"])
+def download_media(media, subtype, postdate, album = ''):
+	filename = postdate + "_" + str(media["id"])
 	source = media["source"]["source"]
 
 	if (media["type"] != "photo" and media["type"] != "video") or not media['canView']:
@@ -152,7 +147,7 @@ def download_media(media, subtype, album = False):
 		return
 
 	if ALBUMS and album and media["type"] == "photo":
-		path = "/photos/" + album + "/" + filename + ext
+		path = "/photos/" + postdate + "_" + album + "/" + filename + ext
 	else:
 		path = "/" + media["type"] + "s/" + filename + ext
 	if USE_SUB_FOLDERS and subtype != "posts":
@@ -193,18 +188,19 @@ def get_content(MEDIATYPE, API_LOCATION):
 				continue
 			if MEDIATYPE == "purchased" and ('fromUser' not in post or post["fromUser"]["username"] != PROFILE):
 				continue # Only get paid posts from PROFILE
-			if len(post["media"]) > 1: # Don't put single photo posts in a subfolder
-				if 'postedAt' in post:
-					album = str(post["postedAt"][:10]) + "_" + str(post["id"])
-				elif 'createdAt' in post:
-					album = str(post["createdAt"][:10]) + "_" + str(post["id"])
-				else:
-					album = False
+			if 'postedAt' in post: #get post date
+				postdate = str(post["postedAt"][:10])
+			elif 'createdAt' in post:
+				postdate = str(post["createdAt"][:10])
 			else:
-				album = False
+				postdate = "1970-01-01" #epoc failsafe if date is not present
+			if len(post["media"]) > 1: # Don't put single photo posts in a subfolder
+				album = str(post["id"]) #album ID
+			else:
+				album = ""
 			for media in post["media"]:
 				if "source" in media and "source" in media["source"] and media["source"]["source"] and ("canView" not in media or media["canView"]):
-					download_media(media, MEDIATYPE, album)
+					download_media(media, MEDIATYPE, postdate, album)
 		global new_files
 		print("Downloaded " + str(new_files) + " new " + MEDIATYPE)
 		new_files = 0
