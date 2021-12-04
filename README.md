@@ -12,9 +12,6 @@ I have added both header signing authentication methods, so if one fails it will
 #### Requires
 Requires Python3 and 'requests': `python -m pip install requests`
 
-### Recent Update Notice 2021-08-30
-The filenames for messages that were not in an album used to omit the date at the beginning, leaving just the post ID. I have fixed this and now all messages will have the same filename structure as posts, with the date at the beginning. This means it will duplicate your old files since the name will be different. I recommend preemptively deduplicating your messages before running the new script, by deleting/moving the ones that omit the date and allowing them to re-download.
-
 ## Features
 * Choose what type of content to download (photos, videos, posts, stories, messages, purchases, archived)
 * Choose to create subfolders for each of the above, or combine them all into one folder
@@ -38,7 +35,7 @@ Requests to the API now need to be signed. This is an obfuscation technique from
 
 You need your browser's __user-agent__, onlyfans **sess**ion cookie, __x-bc__ HTTP header, and **user-id**. Here's how to get them
 
-- Get your user-agent here [ipchicken](https://ipchicken.com/)
+- Get your browser's user-agent here [ipchicken](https://ipchicken.com/) __You must update this every time your browser updates__
 - Session Cookie
   - Login to OnlyFans as normal
   - Open the dev console Storage Inspector (`SHIFT+F9` on FireFox). or the __Application__ tab of Chrome DevTools
