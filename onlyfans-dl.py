@@ -116,7 +116,7 @@ def get_user_info(profile):
 		global USER_ID, API_HEADER
 		USER_ID = "0"
 		API_HEADER.pop('user-id', None)
-		print('\nUSER_ID auth failed, trying without it...\n(if this persists you can comment out the USER_ID variable)')
+		print('\nUSER_ID auth failed\nUpdate your browser user-agent variable, then sign back in to OF and update your session variables.\nhttps://ipchicken.com/\n')
 		info = api_request("/users/" + profile, 'user-info')
 		if "error" in info:
 			print("\nERROR: " + info["error"]["message"])
@@ -210,7 +210,7 @@ if __name__ == "__main__":
 	if len(sys.argv) < 2:
 		print("\nUsage: " + sys.argv[0] + " <list of profiles / all> [optional: only get last <integer> days of posts]\n")
 		print("Make sure to update the session variables at the top of this script\nSee readme for instructions")
-		print("Update User Agent: https://ipchicken.com/\n")
+		print("Update Browser User Agent (Every time it updates): https://ipchicken.com/\n")
 		exit()
 	
 	#Get the rules for the signed headers dynamically, so we don't have to update the script every time they change
