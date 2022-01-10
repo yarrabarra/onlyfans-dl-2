@@ -69,7 +69,7 @@ def create_signed_headers(link, queryParams):
 
 
 def api_request(endpoint, apiType):
-	posts_limit = 100
+	posts_limit = 50
 	getParams = { "limit": str(posts_limit), "order": "publish_date_asc"}
 	if apiType == 'messages':
 		getParams['order'] = 'asc'
