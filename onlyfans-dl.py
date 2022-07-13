@@ -81,10 +81,12 @@ def api_request(endpoint, apiType):
 	create_signed_headers(endpoint, getParams)
 	list_base = requests.get(API_URL + endpoint, headers=API_HEADER, params=getParams).json()
 
-	# Fixed the issue with the maximum limit of 100 posts by creating a kind of "pagination"
+	# Fixed the issue with the maximum limit of 50 posts by creating a kind of "pagination"
 	if (len(list_base) >= posts_limit and apiType != 'user-info') or ('hasMore' in list_base and list_base['hasMore']):
-		if apiType == 'purchased' or apiType == 'subscriptions' or apiType == 'messages':
-			getParams['offset'] = str(posts_limit) #If the limit for purchased posts is lower than for posts, this won't work. But I can't test it
+		if apiType == 'messages':
+			getParams['id'] = str(list_base['list'][len(list_base['list'])-1]['id'])
+		elif apiType == 'purchased' or apiType == 'subscriptions':
+			getParams['offset'] = str(posts_limit)
 		else:
 			getParams['afterPublishTime'] = list_base[len(list_base)-1]['postedAtPrecise']
 		while 1:
@@ -94,7 +96,7 @@ def api_request(endpoint, apiType):
 				list_base['list'].extend(list_extend['list'])
 				if list_extend['hasMore'] == False or len(list_extend['list']) < posts_limit:
 					break
-				getParams['offset'] = str(len(list_base['list']))
+				getParams['id'] = str(list_base['list'][len(list_base['list'])-1]['id'])
 				continue
 			list_base.extend(list_extend) # Merge with previous posts
 			if len(list_extend) < posts_limit:
