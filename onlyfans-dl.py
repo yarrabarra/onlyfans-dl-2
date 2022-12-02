@@ -72,7 +72,7 @@ def api_request(endpoint, apiType):
 	posts_limit = 50
 	getParams = { "limit": str(posts_limit), "order": "publish_date_asc"}
 	if apiType == 'messages':
-		getParams['order'] = 'asc'
+		getParams['order'] = "desc"
 	if apiType == 'subscriptions':
 		getParams['type'] = 'active'
 	if MAX_AGE and apiType != 'messages' and apiType != 'purchased' and apiType != 'subscriptions': #Cannot be limited by age
