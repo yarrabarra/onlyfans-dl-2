@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -127,7 +127,10 @@ def get_subscriptions():
 
 def download_media(media, subtype, postdate, album = ''):
 	filename = postdate + "_" + str(media["id"])
-	source = media["source"]["source"]
+	if subtype == "stories":
+		source = media["files"]["source"]["url"]
+	else:
+		source = media["source"]["source"]
 
 	if (media["type"] != "photo" and media["type"] != "video") or not media['canView']:
 		return
@@ -192,7 +195,9 @@ def get_content(MEDIATYPE, API_LOCATION):
 			else:
 				album = ""
 			for media in post["media"]:
-				if "source" in media and "source" in media["source"] and media["source"]["source"] and ("canView" not in media or media["canView"]):
+				if MEDIATYPE == "stories":
+					postdate = str(media["createdAt"][:10])
+				if "source" in media and "source" in media["source"] and media["source"]["source"] and ("canView" not in media or media["canView"]) or "files" in media:
 					download_media(media, MEDIATYPE, postdate, album)
 		global new_files
 		print("Downloaded " + str(new_files) + " new " + MEDIATYPE)
