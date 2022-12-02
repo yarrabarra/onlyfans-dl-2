@@ -27,6 +27,7 @@ USE_SUB_FOLDERS = True # use content type subfolders (messgaes/archived/stories/
 # content types to download
 VIDEOS = True
 PHOTOS = True
+AUDIO = True
 POSTS = True
 STORIES = True
 MESSAGES = True
@@ -132,9 +133,9 @@ def download_media(media, subtype, postdate, album = ''):
 	else:
 		source = media["source"]["source"]
 
-	if (media["type"] != "photo" and media["type"] != "video") or not media['canView']:
+	if (media["type"] != "photo" and media["type"] != "video" and media["type"] != "audio") or not media['canView']:
 		return
-	if (media["type"] == "photo" and not PHOTOS) or (media["type"] == "video" and not VIDEOS):
+	if (media["type"] == "photo" and not PHOTOS) or (media["type"] == "video" and not VIDEOS) or (media["type"] == "audio" and not AUDIO):
 		return
 
 	extension = source.split('?')[0].split('.')
