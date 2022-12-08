@@ -84,7 +84,7 @@ def api_request(endpoint, apiType):
 	if status.ok:
 		list_base = status.json()
 	else:
-		return "[]"
+		return json.loads('{"error":{"message":"http '+str(status.status_code)+'"}}')
 
 	# Fixed the issue with the maximum limit of 50 posts by creating a kind of "pagination"
 	if (len(list_base) >= posts_limit and apiType != 'user-info') or ('hasMore' in list_base and list_base['hasMore']):
@@ -128,7 +128,7 @@ def get_subscriptions():
 	subs = api_request("/subscriptions/subscribes", "subscriptions")
 	if "error" in subs:
 		print("\nSUBSCRIPTIONS ERROR: " + subs["error"]["message"])
-		exit()
+		return
 	return [row['username'] for row in subs]
 
 
