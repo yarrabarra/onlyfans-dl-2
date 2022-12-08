@@ -80,7 +80,11 @@ def api_request(endpoint, apiType):
 		getParams['afterPublishTime'] = str(MAX_AGE) + ".000000"
 		#Messages can only be limited by offset or last message ID. This requires its own separate function. TODO
 	create_signed_headers(endpoint, getParams)
-	list_base = requests.get(API_URL + endpoint, headers=API_HEADER, params=getParams).json()
+	status = requests.get(API_URL + endpoint, headers=API_HEADER, params=getParams)
+	if status.ok:
+		list_base = status.json()
+	else:
+		return "[]"
 
 	# Fixed the issue with the maximum limit of 50 posts by creating a kind of "pagination"
 	if (len(list_base) >= posts_limit and apiType != 'user-info') or ('hasMore' in list_base and list_base['hasMore']):
@@ -92,10 +96,12 @@ def api_request(endpoint, apiType):
 			getParams['afterPublishTime'] = list_base[len(list_base)-1]['postedAtPrecise']
 		while 1:
 			create_signed_headers(endpoint, getParams)
-			list_extend = requests.get(API_URL + endpoint, headers=API_HEADER, params=getParams).json()
+			status = requests.get(API_URL + endpoint, headers=API_HEADER, params=getParams)
+			if status.ok:
+				list_extend = status.json()
 			if apiType == 'messages':
 				list_base['list'].extend(list_extend['list'])
-				if list_extend['hasMore'] == False or len(list_extend['list']) < posts_limit:
+				if list_extend['hasMore'] == False or len(list_extend['list']) < posts_limit or not status.ok:
 					break
 				getParams['id'] = str(list_base['list'][len(list_base['list'])-1]['id'])
 				continue
