@@ -1,0 +1,13 @@
+.history/*
+.vscode/*
+*.db
+*.jpg
+*.mp4
+logs/*
+subscriptions/*
+liberate_photos.py
+liberate_db.py
+*.zip
+*.liberated
+*.orig
+*.old
