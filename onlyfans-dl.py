@@ -9,6 +9,7 @@ import shutil
 import requests
 import hashlib
 import sqlite3
+import session_vars
 from avologger import Logger
 
 requests.urllib3.disable_warnings()
@@ -534,17 +535,11 @@ class OFDownloader():
 
 
 def main():
-    # if len(sys.argv) < 2:
-    #     print("\nUsage: " + sys.argv[0] + " <list of profiles / all> [optional: only get last <integer> days of posts]\n") 
-    #     print("Make sure to update the session variables at the top of this script (See readme).\n")
-    #     print("Update Browser User Agent (Every time it updates): https://ipchicken.com/\n")
-    #     exit()
-
     ## Session Variables (update every time you login or your browser updates)
-    USER_ID = "30908053"
-    USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"
-    SESS_COOKIE = "gdhruvtlr1afudli4e71g12si9"
-    X_BC = "02600533892eb615e12cfd81b35441c503bc02ff"
+    USER_ID = session_vars.USER_ID
+    USER_AGENT = session_vars.USER_AGENT
+    SESS_COOKIE = session_vars.SESS_COOKIE
+    X_BC = session_vars.X_BC
 
     log.info("Beginning processing...")
 
