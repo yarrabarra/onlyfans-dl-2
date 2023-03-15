@@ -11,3 +11,4 @@ liberate_db.py
 *.liberated
 *.orig
 *.old
+session_vars.py
