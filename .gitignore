@@ -12,3 +12,4 @@ liberate_db.py
 *.orig
 *.old
 session_vars.py
+__pycache__/*
