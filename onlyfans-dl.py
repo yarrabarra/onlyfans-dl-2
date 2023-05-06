@@ -329,7 +329,6 @@ class OFDownloader():
             source = media["source"]["source"]
         
         if (media["type"] != "photo" and media["type"] != "video" and media["type"] != "audio") or not media['canView']:
-        
             return False
 
         if source is not None:
@@ -339,7 +338,6 @@ class OFDownloader():
             return False
             
         if len(ext) < 3:
-        
             return False
 
         if self.albums and album and media["type"] == "photo":
