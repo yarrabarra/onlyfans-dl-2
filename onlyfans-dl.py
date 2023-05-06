@@ -332,8 +332,12 @@ class OFDownloader():
         
             return False
 
-        extension = source.split('?')[0].split('.')
-        ext = '.' + extension[len(extension)-1]
+        if source is not None:
+            extension = source.split('?')[0].split('.')
+            ext = '.' + extension[len(extension)-1]
+        else:
+            return False
+            
         if len(ext) < 3:
         
             return False
@@ -410,7 +414,9 @@ class OFDownloader():
 
 
     def get_content(self, profile, mediaType, api_location):
+        log.info(f"Params: Profile - {profile} | Media Type - {mediaType} | API Location - {api_location}")
         posts = self.api_request(api_location, mediaType)
+        log.info(f"Posts: {len(posts)}")
         if posts is not False:
             # log.info(f"POSTS: {posts}") ## Causes wierd behavior!  Probably a buffer overflow or something.
             if "error" in posts:
@@ -459,7 +465,7 @@ class OFDownloader():
                 
                 return True
             else:
-                log.error("Error returned in posts.")
+                log.error("No posts found!")
                 
                 return False
 
