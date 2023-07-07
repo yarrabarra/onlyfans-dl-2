@@ -76,7 +76,7 @@ class OFDownloader():
         }
         
         ## Get the rules for the signed headers dynamically, so we don't have to update the script every time they change
-        self.dynamic_rules = requests.get('https://raw.githubusercontent.com/DATAHOARDERS/dynamic-rules/main/onlyfans.json').json()
+        self.dynamic_rules = requests.get('https://raw.githubusercontent.com/DIGITALCRIMINALS/dynamic-rules/main/onlyfans.json').json()
 
 
     def create_db_if_not_exists(self):
