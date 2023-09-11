@@ -1,0 +1,117 @@
+2023-09-11 13:32:16.744 | INFO     | __main__:main:41 - Beginning processing...
+2023-09-11 13:32:17.025 | INFO     | ofdb:__init__:26 - Opening DB connection...
+2023-09-11 13:32:17.026 | INFO     | ofdb:__init__:30 - DB connection opened.
+2023-09-11 13:32:17.026 | INFO     | ofdb:close_db:74 - Closing DB...
+2023-09-11 13:32:17.027 | INFO     | ofdb:close_db:76 - DB closed.
+2023-09-11 13:32:17.027 | ERROR    | __main__:main:45 - An error has been caught in function 'main', process 'MainProcess' (18892), thread 'MainThread' (46516):
+Traceback (most recent call last):
+
+  File "F:\Users\Sean\New folder\of3\src\main.py", line 54, in <module>
+    main()
+    └ <Command main>
+
+  File "F:\Users\Sean\New folder\of3\.venv\lib\site-packages\click\core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+           │    │     │       └ {}
+           │    │     └ ()
+           │    └ <function BaseCommand.main at 0x000002398A1C4310>
+           └ <Command main>
+
+  File "F:\Users\Sean\New folder\of3\.venv\lib\site-packages\click\core.py", line 1078, in main
+    rv = self.invoke(ctx)
+         │    │      └ <click.core.Context object at 0x00000239885D7E80>
+         │    └ <function Command.invoke at 0x000002398A1C4DC0>
+         └ <Command main>
+
+  File "F:\Users\Sean\New folder\of3\.venv\lib\site-packages\click\core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           │   │      │    │           │   └ {'targets': 'posts', 'loglevel': 'INFO', 'max_post_days': 14, 'albums': False, 'use_subfolders': True}
+           │   │      │    │           └ <click.core.Context object at 0x00000239885D7E80>
+           │   │      │    └ <function main at 0x00000239AB3F0310>
+           │   │      └ <Command main>
+           │   └ <function Context.invoke at 0x000002398A1A7AC0>
+           └ <click.core.Context object at 0x00000239885D7E80>
+
+  File "F:\Users\Sean\New folder\of3\.venv\lib\site-packages\click\core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+                       │       └ {'targets': 'posts', 'loglevel': 'INFO', 'max_post_days': 14, 'albums': False, 'use_subfolders': True}
+                       └ ()
+
+> File "F:\Users\Sean\New folder\of3\src\main.py", line 45, in main
+    ofd.run(targets)
+    │   │   └ 'posts'
+    │   └ <function OFDownloader.run at 0x00000239AB363D00>
+    └ <ofdownloader.OFDownloader object at 0x00000239AB395570>
+
+  File "F:\Users\Sean\New folder\of3\src\ofdownloader.py", line 142, in run
+    subscription_list = self.api.get_subscriptions()
+                        │    │   └ <function OFClient.get_subscriptions at 0x00000239AB3635B0>
+                        │    └ <ofapi.OFClient object at 0x00000239AB3955D0>
+                        └ <ofdownloader.OFDownloader object at 0x00000239AB395570>
+
+  File "F:\Users\Sean\New folder\of3\src\ofapi.py", line 183, in get_subscriptions
+    return self._get_by_offset(Endpoint.subscriptions, Subscription, "offset", {"type": "active"})
+           │    │              │        │              └ <class 'models.subscriptions.Subscription'>
+           │    │              │        └ 'https://onlyfans.com/api2/v2/subscriptions/subscribes'
+           │    │              └ <class 'ofapi.Endpoint'>
+           │    └ <function OFClient._get_by_offset at 0x00000239AB363520>
+           └ <ofapi.OFClient object at 0x00000239AB3955D0>
+
+  File "F:\Users\Sean\New folder\of3\src\ofapi.py", line 156, in _get_by_offset
+    request = self.get(endpoint, getParams)
+              │    │   │         └ {'limit': 50, 'order': 'desc', 'type': 'active'}
+              │    │   └ 'https://onlyfans.com/api2/v2/subscriptions/subscribes'
+              │    └ <function APIClient.get at 0x00000239AB321AB0>
+              └ <ofapi.OFClient object at 0x00000239AB3955D0>
+
+  File "F:\Users\Sean\New folder\of3\.venv\lib\site-packages\apiclient\client.py", line 129, in get
+    return self.get_request_strategy().get(endpoint, params=params, **kwargs)
+           │    │                          │                │         └ {}
+           │    │                          │                └ {'limit': 50, 'order': 'desc', 'type': 'active'}
+           │    │                          └ 'https://onlyfans.com/api2/v2/subscriptions/subscribes'
+           │    └ <function APIClient.get_request_strategy at 0x00000239AB321630>
+           └ <ofapi.OFClient object at 0x00000239AB3955D0>
+
+  File "F:\Users\Sean\New folder\of3\.venv\lib\site-packages\apiclient\request_strategies.py", line 60, in get
+    return self._make_request(self.get_session().get, endpoint, params=params, **kwargs)
+           │    │             │    │                  │                │         └ {}
+           │    │             │    │                  │                └ {'limit': 50, 'order': 'desc', 'type': 'active'}
+           │    │             │    │                  └ 'https://onlyfans.com/api2/v2/subscriptions/subscribes'
+           │    │             │    └ <function RequestStrategy.get_session at 0x00000239AB3200D0>
+           │    │             └ <ofapi.SignedRequestsStrategy object at 0x00000239AB3955A0>
+           │    └ <function SignedRequestsStrategy._make_request at 0x00000239AB3632E0>
+           └ <ofapi.SignedRequestsStrategy object at 0x00000239AB3955A0>
+
+  File "F:\Users\Sean\New folder\of3\src\ofapi.py", line 105, in _make_request
+    headers.update(self._create_signed_headers(endpoint, params))
+    │       │      │    │                      │         └ {'limit': 50, 'order': 'desc', 'type': 'active'}
+    │       │      │    │                      └ 'https://onlyfans.com/api2/v2/subscriptions/subscribes'
+    │       │      │    └ <function SignedRequestsStrategy._create_signed_headers at 0x00000239AB362950>
+    │       │      └ <ofapi.SignedRequestsStrategy object at 0x00000239AB3955A0>
+    │       └ <method 'update' of 'dict' objects>
+    └ {'Accept': 'application/json, text/plain, */*', 'Accept-Encoding': 'gzip, deflate', 'app-token': '33d57ade8c02dbc5a333db99ff9...
+
+  File "F:\Users\Sean\New folder\of3\src\ofapi.py", line 116, in _create_signed_headers
+    msg = "\n".join([self.dynamic_rules["static_param"], unixtime, path, session_vars.USER_ID])
+                     │    │                              │         └ '/api2/v2/subscriptions/subscribes?limit=50&order=desc&type=active'
+                     │    │                              └ '1694403137'
+                     │    └ {'static_param': 'QhdwZlJFCotb5IMlWMYk5V84XKLe5KZ0', 'format': '9053:{}:{:x}:64a6ffbb', 'checksum_indexes': [11, 19, 13, 33, ...
+                     └ <ofapi.SignedRequestsStrategy object at 0x00000239AB3955A0>
+
+NameError: name 'session_vars' is not defined
+2023-09-11 13:32:17.037 | INFO     | __main__:main:47 - Processing finished.
+2023-09-11 13:32:17.037 | INFO     | __main__:main:49 - Run time: 0.005 minutes (0.293 seconds)
+2023-09-11 13:32:17.038 | INFO     | __main__:main:50 - --------------------------------------------------------------------------------
+2023-09-11 13:35:26.142 | INFO     | __main__:main:41 - Beginning processing...
+2023-09-11 13:35:26.198 | INFO     | ofdb:__init__:26 - Opening DB connection...
+2023-09-11 13:35:26.199 | INFO     | ofdb:__init__:30 - DB connection opened.
+2023-09-11 13:35:27.035 | INFO     | ofdownloader:run:144 - Subscriptions: [15743781 - Celia]
+2023-09-11 13:35:27.035 | INFO     | ofdownloader:run:148 - ceelcee exists. Downloading new media, skipping pre-existing.
+2023-09-11 13:35:29.418 | INFO     | ofdownloader:get_content:100 - Found 21 posts
+2023-09-11 13:35:29.422 | INFO     | ofdownloader:get_content:131 - Total files processed: 34
+2023-09-11 13:35:29.422 | INFO     | ofdownloader:get_content:132 - Downloaded 0 new posts
+2023-09-11 13:35:29.423 | INFO     | ofdb:close_db:74 - Closing DB...
+2023-09-11 13:35:29.423 | INFO     | ofdb:close_db:76 - DB closed.
+2023-09-11 13:35:29.423 | INFO     | __main__:main:47 - Processing finished.
+2023-09-11 13:35:29.423 | INFO     | __main__:main:49 - Run time: 0.055 minutes (3.279 seconds)
+2023-09-11 13:35:29.423 | INFO     | __main__:main:50 - --------------------------------------------------------------------------------
