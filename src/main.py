@@ -4,16 +4,18 @@ import os
 import sys
 import time
 
-
+from pathlib import Path
 from loguru import logger as log
 from ofdownloader import OFDownloader
 
 
 # The default logging level is INFO so we will override to make it DEBUG
 def setup_logger(loglevel="INFO"):
-    log_path = os.path.join(sys.path[0], "logs")
+    log_path = Path(os.path.join(os.getcwd(), "logs"))
+    log_path.mkdir(exist_ok=True)
     log_name = "of.log"
-    log_location = os.path.join(log_path, log_name)
+    log_location = log_path / log_name
+    log.info(f"Starting logs at {log_location}")
     log.add(log_location, level=loglevel)
 
 
