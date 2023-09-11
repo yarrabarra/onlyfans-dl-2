@@ -1,0 +1,54 @@
+import click
+
+import os
+import sys
+import time
+
+
+from loguru import logger as log
+from ofdownloader import OFDownloader
+
+
+# The default logging level is INFO so we will override to make it DEBUG
+def setup_logger(loglevel="INFO"):
+    log_path = os.path.join(sys.path[0], "logs")
+    log_name = "of.log"
+    log_location = os.path.join(log_path, log_name)
+    log.add(log_location, level=loglevel)
+
+
+@click.command()
+@click.option("--targets", default="all", help="Which items to query")
+@click.option("--loglevel", default="INFO", help="Log level for logging")
+@click.option("--max-post-days", default=14, help="Maximum number of days to go back for posts")
+@click.option(
+    "--albums",
+    default=False,
+    type=bool,
+    help="Separate photos into subdirectories by post/album (Single photo posts are not put into subdirectories)",
+)
+@click.option(
+    "--use-subfolders",
+    default=True,
+    type=bool,
+    help="Use content type subfolders (messages/archived/stories/purchased),"
+    "or download everything to /profile/photos and /profile/videos",
+)
+def main(targets, loglevel, *_, **__):
+    # Session Variables (update every time you login or your browser updates)
+    setup_logger(loglevel)
+
+    log.info("Beginning processing...")
+    start_time = time.time()
+    ofd = OFDownloader()
+
+    ofd.run(targets)
+
+    log.info("Processing finished.")
+    runtime = time.time() - start_time
+    log.info("Run time: {rt} minutes ({secs} seconds)".format(rt=round((runtime / 60), 3), secs=round(runtime, 3)))
+    log.info("-" * 80)
+
+
+if __name__ == "__main__":
+    main()
