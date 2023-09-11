@@ -13,3 +13,5 @@ session_vars.json
 **/__pycache__/*
 .mypy_cahce/*
 .venv/*
+build/
+dist/

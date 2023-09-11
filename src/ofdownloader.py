@@ -147,9 +147,10 @@ class OFDownloader:
                 else:
                     log.info("Downloading content to " + subs_dir)
                 if targets == "all":
-                    # self.get_content(subscription, "posts")
-                    self.get_content(subscription, "archived")
-                    self.get_content(subscription, "stories")
+                    # TODO: Archived/stories
+                    # self.get_content(subscription, "archived")
+                    # self.get_content(subscription, "stories")
+                    self.get_content(subscription, "posts")
                     self.get_content(subscription, "messages")
                     self.get_content(subscription, "purchased")
                 else:
