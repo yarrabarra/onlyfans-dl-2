@@ -17,6 +17,7 @@ pycld2 = { url = "https://download.lfd.uci.edu/pythonlibs/archived/pycld2-0.41-c
 pywin32 = { version = "^306", extras = ["tagging"], platform = "win32" }
 multi-rake = { version = "^0.0.2", extras = ["tagging"], platform = "win32" }
 api-client = "^1.3.1"
+pyinstaller-hooks-contrib = "^2023.8"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"
