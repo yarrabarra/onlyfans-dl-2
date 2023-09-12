@@ -121,6 +121,8 @@ class OFDownloader:
                     continue
 
                 path = self.download_media(subscription, media, mediaType, postdate, album)
+                if path is not None:
+                    self.processed_count += 1
                 self.tag_media(post, path)
                 self.processed_count += 1
                 if self.processed_count % 100 == 0:
