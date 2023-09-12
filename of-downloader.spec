@@ -2,17 +2,17 @@
 from PyInstaller.utils.hooks import collect_submodules
 
 hiddenimports = []
-hiddenimports += collect_submodules('application')
+hiddenimports += collect_submodules("application")
 
 
 block_cipher = None
 
 
 a = Analysis(
-    ['main.py'],
+    ["src/main.py"],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[("src/sql", "sql")],
     hiddenimports=hiddenimports,
     hookspath=[],
     runtime_hooks=[],
@@ -31,7 +31,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='of-downloader',
+    name="of-downloader",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
