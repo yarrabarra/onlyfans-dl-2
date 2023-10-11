@@ -20,7 +20,13 @@ def setup_logger(loglevel="INFO"):
 
 
 @click.command()
-@click.option("--targets", default="all", help="Which items to query")
+@click.option(
+    "--targets",
+    default="all",
+    type=click.Choice(["all", "purchased", "messages", "posts"]),
+    help="Which items to query",
+)
+@click.option("--subscriptions", default="all", help="Which subscription usernames to query")
 @click.option("--loglevel", default="INFO", help="Log level for logging")
 @click.option("--max-post-days", default=14, help="Maximum number of days to go back for posts")
 @click.option(
@@ -36,7 +42,7 @@ def setup_logger(loglevel="INFO"):
     help="Use content type subfolders (messages/archived/stories/purchased),"
     "or download everything to /profile/photos and /profile/videos",
 )
-def main(targets, loglevel, *_, **__):
+def main(targets, subscriptions, loglevel, *_, **__):
     # Session Variables (update every time you login or your browser updates)
     setup_logger(loglevel)
 
@@ -44,7 +50,7 @@ def main(targets, loglevel, *_, **__):
     start_time = time.time()
     ofd = OFDownloader()
 
-    ofd.run(targets)
+    ofd.run(targets, subscriptions)
 
     log.info("Processing finished.")
     runtime = time.time() - start_time
