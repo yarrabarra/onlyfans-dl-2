@@ -1,8 +1,9 @@
 from datetime import datetime
-from typing import Any, Optional
 from decimal import Decimal
+from typing import Any, Optional
 
 from pydantic import BaseModel
+
 from .media import MediaItem
 
 
@@ -25,7 +26,7 @@ class SubscriptionBundle(BaseModel):
     id: int
     discount: int
     duration: int
-    price: int
+    price: Decimal
     canBuy: bool
 
 
@@ -54,7 +55,7 @@ class Author(BaseModel):
     tipsMax: int
     canEarn: bool
     canAddSubscriber: bool
-    subscribePrice: int
+    subscribePrice: Decimal
     subscriptionBundles: list[SubscriptionBundle]
     isPaywallRequired: bool
     unprofitable: bool
@@ -66,7 +67,7 @@ class Author(BaseModel):
     subscribedByExpireDate: datetime
     subscribedByAutoprolong: bool
     subscribedIsExpiredNow: bool
-    currentSubscribePrice: int
+    currentSubscribePrice: Decimal
     subscribedOn: bool
     subscribedOnExpiredNow: Any
     subscribedOnDuration: Any
@@ -77,12 +78,12 @@ class Author(BaseModel):
 class Option(BaseModel):
     id: int
     name: str
-    count: int
+    count: Optional[int]
     isVoted: bool
 
 
 class Voting(BaseModel):
-    finishedAt: str
+    finishedAt: Optional[str]
     options: list[Option]
     total: int
 

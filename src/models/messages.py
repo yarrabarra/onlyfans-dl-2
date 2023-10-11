@@ -1,5 +1,7 @@
-from typing import Any
 from datetime import datetime
+from decimal import Decimal
+from typing import Any, Optional
+
 from pydantic import BaseModel
 
 from .media import MediaItem
@@ -24,7 +26,7 @@ class SubscriptionBundle(BaseModel):
     id: int
     discount: int
     duration: int
-    price: int
+    price: Decimal
     canBuy: bool
 
 
@@ -61,7 +63,7 @@ class FromUser(BaseModel):
     tipsMax: int
     canEarn: bool
     canAddSubscriber: bool
-    subscribePrice: int
+    subscribePrice: Decimal
     subscriptionBundles: list[SubscriptionBundle]
     isPaywallRequired: bool
     unprofitable: bool
@@ -74,12 +76,12 @@ class FromUser(BaseModel):
     subscribedByExpireDate: datetime
     subscribedByAutoprolong: bool
     subscribedIsExpiredNow: bool
-    currentSubscribePrice: int
+    currentSubscribePrice: Decimal
     subscribedOn: Any
     subscribedOnExpiredNow: Any
     subscribedOnDuration: Any
-    callPrice: int
-    lastSeen: str
+    callPrice: Decimal
+    lastSeen: Optional[str]
     canReport: bool
 
 
@@ -100,8 +102,8 @@ class Message(BaseModel):
     queueId: int
     fromUser: FromUser
     isFromQueue: bool
-    canUnsendQueue: bool
-    unsendSecondsQueue: int
+    canUnsendQueue: Optional[bool] = None
+    unsendSecondsQueue: Optional[int] = None
     id: int
     isOpened: bool
     isNew: bool

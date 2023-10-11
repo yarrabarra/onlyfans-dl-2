@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import Any, List, Optional
 
 from pydantic import BaseModel, RootModel
@@ -23,7 +24,7 @@ class SubscriptionBundle(BaseModel):
     id: int
     discount: int
     duration: int
-    price: int
+    price: Decimal
     canBuy: bool
 
 
@@ -44,8 +45,8 @@ class Subscribe(BaseModel):
     startDate: datetime
     expireDate: datetime
     cancelDate: datetime | None
-    price: int
-    regularPrice: int
+    price: Decimal
+    regularPrice: Decimal
     discount: int
     earningId: int
     action: str
@@ -56,15 +57,15 @@ class Subscribe(BaseModel):
 
 
 class SubscribedByData(BaseModel):
-    price: int
-    newPrice: int
-    regularPrice: int
-    subscribePrice: int
+    price: Decimal
+    newPrice: Decimal
+    regularPrice: Decimal
+    subscribePrice: Decimal
     discountPercent: int
     discountPeriod: int
     subscribeAt: datetime
     expiredAt: datetime
-    renewedAt: datetime
+    renewedAt: Optional[datetime]
     discountFinishedAt: datetime | None
     discountStartedAt: datetime | None
     status: Any
@@ -101,7 +102,7 @@ class Subscription(BaseModel):
     tipsMax: int
     canEarn: bool
     canAddSubscriber: bool
-    subscribePrice: int
+    subscribePrice: Decimal
     subscriptionBundles: List[SubscriptionBundle]
     isPaywallRequired: bool
     unprofitable: bool
@@ -114,14 +115,14 @@ class Subscription(BaseModel):
     subscribedByExpireDate: datetime
     subscribedByAutoprolong: bool
     subscribedIsExpiredNow: bool
-    currentSubscribePrice: int
+    currentSubscribePrice: Decimal
     subscribedOn: bool
     subscribedOnExpiredNow: Any
     subscribedOnDuration: Any
     canReport: bool
     canReceiveChatMessage: bool
     hideChat: bool
-    lastSeen: str
+    lastSeen: str | None
     isPerformer: bool
     isRealPerformer: bool
     subscribedByData: SubscribedByData
