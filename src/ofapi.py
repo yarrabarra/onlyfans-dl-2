@@ -1,19 +1,12 @@
-import requests
-import hashlib
 import click
-from util import get_session_config
 
 
-from typing import Callable, Type, Literal, Any
+from typing import Type, Literal, Any
 from datetime import datetime, timedelta
-from urllib.parse import urlparse
 from loguru import logger as log
 
 from apiclient import APIClient, endpoint
-from apiclient.request_strategies import RequestStrategy
 from apiclient.response_handlers import JsonResponseHandler
-from apiclient.response import Response
-from apiclient.utils.typing import OptionalDict
 
 from models.messages import MessageList, Message
 from models.purchase import Purchase
@@ -21,7 +14,18 @@ from models.profile import Profile
 from models.post import Post
 from models.subscriptions import Subscription
 
-DYNAMIC_RULE_URL = "https://raw.githubusercontent.com/DIGITALCRIMINALS/dynamic-rules/main/onlyfans.json"
+from api.strategy import SignedRequestsStrategy
+
+DRM_ENABLED = False
+try:
+    from pywidevine.cdm import Cdm
+    from pywidevine.device import Device
+    from pywidevine.pssh import PSSH
+
+    DRM_ENABLED = True
+except Exception as e:
+    log.error(f"Unable to import pywidevine, disabling DRM client: {e}")
+
 POST_LIMIT = 50
 
 # Type Alias
@@ -53,80 +57,9 @@ class Endpoint:
     purchased = "/posts/paid"
     profile = "/users/{id}"
     subscriptions = "/subscriptions/subscribes"
-
-
-class SignedRequestsStrategy(RequestStrategy):
-    """Requests strategy that uses a signed header"""
-
-    session_vars = None
-
-    def _configure_headers(
-        self,
-    ):
-        if self.session_vars is None:
-            try:
-                session_vars = get_session_config()
-            except ValueError as e:
-                log.critical(f"Config error: {e}")
-                raise
-            self.dynamic_rules = None
-            self.api_headers = {
-                "Accept": "application/json, text/plain, */*",
-                "Accept-Encoding": "gzip, deflate",
-                "app-token": "33d57ade8c02dbc5a333db99ff9ae26a",
-                "User-Agent": session_vars["USER_AGENT"],
-                "x-bc": str(session_vars["X_BC"]),
-                "user-id": str(session_vars["USER_ID"]),
-                "Cookie": f"auh_id={str(session_vars['USER_ID'])}; sess={session_vars['SESS_COOKIE']}",
-            }
-            self.session_vars = session_vars
-
-        # Get the rules for the signed headers dynamically, so we don't have to update the script every time they change
-        if self.dynamic_rules is None:
-            self.dynamic_rules = requests.get(DYNAMIC_RULE_URL).json()
-
-    def set_client(self, client: "APIClient"):
-        super().set_client(client)
-        self._configure_headers()
-        # Set a global `requests.session` on the parent client instance.
-        if self.get_session() is None:
-            self.set_session(requests.session())
-
-    def _make_request(
-        self,
-        request_method: Callable,
-        endpoint: str,
-        params: OptionalDict = None,
-        headers: OptionalDict = None,
-        data: OptionalDict = None,
-        **kwargs,
-    ) -> Response:
-        """Inject a signed header into the request and delegate the rest back to the superclass"""
-        if headers is None:
-            headers = {}
-        headers.update(self.api_headers)
-        headers.update(self._create_signed_headers(endpoint, params))
-        return super()._make_request(request_method, endpoint, params, headers, data, **kwargs)
-
-    def _create_signed_headers(self, endpoint, queryParams: dict | None):
-        if self.session_vars is None:
-            raise Exception("Session vars did not fully load, aborting.")
-        if self.dynamic_rules is None:
-            raise Exception("Dynamic rules did not fully load, aborting.")
-        path = urlparse(endpoint).path
-        if queryParams:
-            query = "&".join("=".join((key, str(val))) for (key, val) in queryParams.items())
-            path = f"{path}?{query}"
-        unixtime = str(int(datetime.now().timestamp()))
-        msg = "\n".join([self.dynamic_rules["static_param"], unixtime, path, self.session_vars["USER_ID"]])
-        hash_object = hashlib.sha1(msg.encode("utf-8"))
-        sha_1_sign = hash_object.hexdigest()
-        sha_1_b = sha_1_sign.encode("ascii")
-        checksum = (
-            sum([sha_1_b[number] for number in self.dynamic_rules["checksum_indexes"]])
-            + self.dynamic_rules["checksum_constant"]
-        )
-        return {"sign": self.dynamic_rules["format"].format(sha_1_sign, abs(checksum)), "time": unixtime}
+    # https://onlyfans.com/api2/v2/users/media/3020233153/drm/post/738465453?type=widevine
+    # https://onlyfans.com/api2/v2/users/media/3020233153/drm/post/738465453?type=widevine
+    drm_license = "/users/media/{media_id}/drm/post/{post_id}"
 
 
 class OFClient(APIClient):
@@ -211,3 +144,30 @@ class OFClient(APIClient):
         # <profile_name> = "me" -> info about yourself
         response = self.get(Endpoint.profile.format(id=profile_name))
         return Profile.model_validate(response)
+
+
+class OFDRMClient(APIClient):
+    # A dedicated client just for yeeting requests into the void
+
+    def __init__(self, **kwargs):
+        self.request_strategy = SignedRequestsStrategy()
+        super().__init__(request_strategy=self.request_strategy, **kwargs)
+
+    def get_drm_license(self, pssh_secret: str, media_id: int, post_id: int):
+        # Used for signing media licensing requests?
+
+        pssh = PSSH(pssh_secret)
+        endpoint = Endpoint.drm_license.format(media_id=media_id, post_id=post_id)
+        device = Device.load(r"WVD/google_android_sdk_built_for_x86_64_14.0.0_ac23a0a1_4464_l3.wvd")
+        cdm = Cdm.from_device(device)
+        session_id = cdm.open()
+        challenge = cdm.get_license_challenge(session_id, pssh)
+
+        licence = self.post(endpoint, data=challenge, params={"type": "widevine"})  # type: ignore
+        cdm.parse_license(session_id, licence.content)
+        for key in cdm.get_keys(session_id):
+            print(f"[{key.type}] {key.kid.hex}:{key.key.hex()}")
+            if key.type == "CONTENT":
+                print(f"\n--key {key.kid.hex}:{key.key.hex()}")
+        cdm.close(session_id)
+        return cdm
