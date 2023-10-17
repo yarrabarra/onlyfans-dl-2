@@ -15,3 +15,8 @@ session_vars.json
 .venv/*
 build/
 dist/
+WVD/
+htmlcov
+.env
+.coverage
+coverage.xml

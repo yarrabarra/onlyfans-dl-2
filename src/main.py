@@ -15,6 +15,8 @@ def setup_logger(loglevel="INFO"):
     log_path.mkdir(exist_ok=True)
     log_name = "of.log"
     log_location = log_path / log_name
+    log.remove()  # Remove default logger
+    log.add(sys.stdout, level=loglevel)
     log.info(f"Starting logs at {log_location}")
     log.add(log_location, level=loglevel)
 
@@ -55,6 +57,14 @@ def main(targets, subscriptions, loglevel, *_, **__):
     log.info("Processing finished.")
     runtime = time.time() - start_time
     log.info("Run time: {rt} minutes ({secs} seconds)".format(rt=round((runtime / 60), 3), secs=round(runtime, 3)))
+    for name, downloads in ofd.new_files.items():
+        if len(downloads) == 0:
+            continue
+        log.info(f"New files for {name}:")
+        for download in downloads:
+            download = download.replace("\\", "/")
+            log.info(f"  {download}")
+
     log.info("-" * 80)
 
 

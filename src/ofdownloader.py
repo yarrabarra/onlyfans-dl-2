@@ -16,16 +16,18 @@ from models.messages import Message
 
 from windows_metadata import set_metadata
 from ofdb import OFDB
-from ofapi import OFClient
+from ofapi import OFClient, OFDRMClient
 import util
 
-
+DRM_SUPPORT = False
 POSTS_LIMIT = 50
 
 
 class OFDownloader:
     def __init__(self):
         self.api = OFClient()
+        self.drm = OFDRMClient()
+
         # Database
         self.db = OFDB()
 
@@ -34,7 +36,7 @@ class OFDownloader:
         self.use_subfolders = True  #
         self.enable_tags = False
         self.processed_count = 0
-        self.new_files = 0
+        self.new_files: dict[str, list[str]] = {}
 
     def _get_media_path(self, media: MediaItem, mediaType: str, album: str, postdate: str, source: str):
         # Pull just the extension out of the source URL
@@ -60,12 +62,23 @@ class OFDownloader:
                 shutil.copyfileobj(request.raw, destFile)
         return True
 
-    def download_media(self, subscription: Subscription, media: MediaItem, mediaType: str, postdate: str, album=""):
+    def download_media(
+        self, subscription: Subscription, media: MediaItem, mediaType: str, postdate: str, album="", post_id=0
+    ):
         source = media.get_source()
         if source is None:
+            log.debug(f"No source or files for media {media.id}")
             return None
         if not media.is_downloadable():
             return None
+        if media.is_drm():
+            if not DRM_SUPPORT:
+                return None
+            pssh = util.parse_pssh_from_mpd(source)
+            if pssh is None:
+                return None
+            license = self.drm.get_drm_license(pssh, media.id, post_id)
+            exit()
 
         path = self._get_media_path(media, mediaType, album, postdate, source)
         final_path = os.path.join("subscriptions", subscription.username, path)
@@ -75,7 +88,7 @@ class OFDownloader:
             for matchPath in purchasedPath.glob(f"*_{media.id}*"):
                 if matchPath.exists():
                     log.debug(f"Skipping {path} because already exists in {matchPath}")
-                    return final_path
+                    return None
         if self.retrieve_file(source, final_path):
             return final_path
         return None
@@ -103,7 +116,6 @@ class OFDownloader:
 
     def get_content(self, subscription: Subscription, mediaType: str):
         self.processed_count = 0  # Reset to zero
-        self.new_files = 0
         posts = self._get_posts(subscription, mediaType)
         log.info("Found " + str(len(posts)) + " " + mediaType)
         for post in posts:
@@ -126,18 +138,18 @@ class OFDownloader:
                 if not media.canView:
                     continue
                 if media.source.source is None and media.files is None:
+                    log.info(f"No media source: {media.id}")
                     continue
-                path = self.download_media(subscription, media, mediaType, postdate, album)
+                path = self.download_media(subscription, media, mediaType, postdate, album, post.id)
                 self.processed_count += 1
                 if self.processed_count % 100 == 0:
                     log.info(f"Processed files: {self.processed_count}")
                 if path is not None:
-                    self.new_files += 1
+                    self.new_files.setdefault(subscription.name, [])
+                    self.new_files[subscription.name].append(path)
                 self.tag_media(post, path)
 
         log.info(f"Total files processed: {self.processed_count}")
-        log.info(f"Downloaded {self.new_files} new {mediaType}")
-        self.new_files = 0
         return True
 
     def cleanup_bad_downloads(self, subscriptions):
