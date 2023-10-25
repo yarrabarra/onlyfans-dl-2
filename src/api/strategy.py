@@ -17,11 +17,7 @@ from models.dynamicrule import DynamicRule
 
 
 def _get_api_headers() -> dict[str, str]:
-    try:
-        session_vars = get_session_config()
-    except ValueError as e:
-        log.critical(f"Config error: {e}")
-        raise
+    session_vars = get_session_config()
     return {
         "Accept": "application/json, text/plain, */*",
         "Accept-Encoding": "gzip, deflate",
@@ -75,7 +71,7 @@ class SignedRequestsStrategy(RequestStrategy):
     def _create_signed_headers(self, endpoint, queryParams: dict | None):
         path = urlparse(endpoint).path
         if queryParams:
-            query = urlencode(queryParams)  # "&".join("=".join((key, str(val))) for (key, val) in queryParams.items())
+            query = urlencode(queryParams)
             path = f"{path}?{query}"
         unixtime = str(int(datetime.now().timestamp()))
         msg = "\n".join([self.dynamic_rules.static_param, unixtime, path, self.api_headers["user-id"]])

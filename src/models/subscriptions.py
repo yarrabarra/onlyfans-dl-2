@@ -69,7 +69,7 @@ class SubscribedByData(BaseModel):
     discountFinishedAt: datetime | None
     discountStartedAt: datetime | None
     status: Any
-    isMuted: bool
+    isMuted: Optional[bool] = False
     unsubscribeReason: str
     duration: str
     showPostsInFeed: bool
@@ -107,7 +107,7 @@ class Subscription(BaseModel):
     isPaywallRequired: bool
     unprofitable: bool
     listsStates: List[ListsState]
-    isMuted: bool
+    isMuted: Optional[bool] = False
     isRestricted: bool
     canRestrict: bool
     subscribedBy: bool
@@ -128,7 +128,7 @@ class Subscription(BaseModel):
     subscribedByData: SubscribedByData
     subscribedOnData: Any
     canTrialSend: bool
-    isBlocked: bool
+    isBlocked: Optional[bool] = False
 
     def __repr__(self):
         return f"{self.id} - {self.name}"

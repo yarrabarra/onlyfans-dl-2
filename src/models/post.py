@@ -31,48 +31,48 @@ class SubscriptionBundle(BaseModel):
 
 
 class Author(BaseModel):
-    view: str
     avatar: str
     avatarThumbs: AvatarThumbs
+    canAddSubscriber: bool
+    canCommentStory: bool
+    canEarn: bool
+    canLookStory: bool
+    canPayInternal: bool
+    canRestrict: bool
+    canTrialSend: bool
+    currentSubscribePrice: Decimal
+    hasNotViewedStory: bool
+    hasScheduledStream: bool
+    hasStories: bool
+    hasStream: bool
     header: str
     headerSize: HeaderSize
     headerThumbs: HeaderThumbs
     id: int
-    name: str
-    username: str
-    canLookStory: bool
-    canCommentStory: bool
-    hasNotViewedStory: bool
-    isVerified: bool
-    canPayInternal: bool
-    hasScheduledStream: bool
-    hasStream: bool
-    hasStories: bool
-    tipsEnabled: bool
-    tipsTextEnabled: bool
-    tipsMin: int
-    tipsMinInternal: int
-    tipsMax: int
-    canEarn: bool
-    canAddSubscriber: bool
-    subscribePrice: Decimal
-    subscriptionBundles: list[SubscriptionBundle]
+    isMuted: Optional[bool] = False
     isPaywallRequired: bool
-    unprofitable: bool
-    isMuted: bool
     isRestricted: bool
-    canRestrict: bool
+    isVerified: bool
+    name: str
+    showPostsInFeed: bool
     subscribedBy: bool
+    subscribedByAutoprolong: bool
     subscribedByExpire: bool
     subscribedByExpireDate: datetime
-    subscribedByAutoprolong: bool
     subscribedIsExpiredNow: bool
-    currentSubscribePrice: Decimal
     subscribedOn: bool
-    subscribedOnExpiredNow: Any
     subscribedOnDuration: Any
-    showPostsInFeed: bool
-    canTrialSend: bool
+    subscribedOnExpiredNow: Any
+    subscribePrice: Decimal
+    subscriptionBundles: list[SubscriptionBundle]
+    tipsEnabled: bool
+    tipsMax: int
+    tipsMin: int
+    tipsMinInternal: int
+    tipsTextEnabled: bool
+    unprofitable: bool
+    username: str
+    view: str
 
 
 class Option(BaseModel):

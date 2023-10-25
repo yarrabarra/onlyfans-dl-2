@@ -1,11 +1,17 @@
+import click
+import json
+
 from pathlib import Path
+
+import pytest
 from src import util
 
 test_path = Path(__file__).parent
 
 
 def test_cleanup_text():
-    assert util.cleanup_text("\u2018\u2019*&lt;&gt;foo<br />") == "''<>foo\n"
+    result = util.cleanup_text("\u2018\u2019*&lt;&gt;foo<br />")
+    assert result == "''<>foo\n"
 
 
 def test_parse_pssh_from_mpd():
@@ -21,5 +27,36 @@ def test_parse_pssh_from_mpd():
     assert result == expected
 
 
-def test_get_session_config():
-    util.get_session_config()
+def test_get_session_config_loads(tmp_path):
+    config_path = tmp_path / "test.json"
+    ctx = click.Context(click.Command("cmd"))
+    ctx.params["session_vars_path"] = config_path
+
+    with ctx:
+        # Validate no file
+        with pytest.raises(IOError):
+            util.get_session_config()
+
+        with open(test_path / "../session_vars.sample.json") as sample_file:
+            sample_vars = json.load(sample_file)
+
+        # Validate sample file
+        with open(config_path, "w") as tmp_file:
+            json.dump(sample_vars, tmp_file)
+        with pytest.raises(ValueError):
+            util.get_session_config()
+
+        # Validate values
+        with open(config_path, "w") as tmp_file:
+            json.dump(
+                {
+                    "USER_ID": "a",
+                    "USER_AGENT": "b",
+                    "SESS_COOKIE": "c",
+                    "X_BC": "d",
+                },
+                tmp_file,
+            )
+
+        config = util.get_session_config()
+        assert config["USER_ID"] == "a"

@@ -12,7 +12,6 @@ def test_to_str():
 
 @freeze_time("2023-01-23")
 def test_get_max_days_offset():
-    # param = click.Option(max_post_days=0)?
     ctx = click.Context(click.Command("cmd"))
     ctx.params["max_post_days"] = 14
     with ctx:

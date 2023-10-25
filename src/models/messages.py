@@ -68,7 +68,7 @@ class FromUser(BaseModel):
     isPaywallRequired: bool
     unprofitable: bool
     listsStates: list[ListsState]
-    isMuted: bool
+    isMuted: Optional[bool] = False
     isRestricted: bool
     canRestrict: bool
     subscribedBy: bool

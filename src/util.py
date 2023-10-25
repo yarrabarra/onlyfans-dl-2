@@ -1,4 +1,5 @@
 import os
+import click
 import json
 import xmltodict
 from models.mpd import BaseMPD
@@ -18,10 +19,12 @@ def cleanup_text(text):
     return text
 
 
-def get_session_config():
-    if not os.path.exists("session_vars.json"):
-        raise ValueError("Missing session_vars.json, see README.md for configuration")
-    with open("session_vars.json", "r") as jsonFile:
+@click.pass_context
+def get_session_config(ctx):
+    session_vars_path = ctx.params["session_vars_path"]
+    if not os.path.exists(session_vars_path):
+        raise IOError(f"Missing {session_vars_path}, see README.md for configuration")
+    with open(session_vars_path, "r") as jsonFile:
         config = json.load(jsonFile)
         for var in ("USER_ID", "USER_AGENT", "SESS_COOKIE", "X_BC"):
             if len(config.get(var, "")) == 0:

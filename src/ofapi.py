@@ -79,7 +79,7 @@ class OFClient(APIClient):
         items: list[Offsetables] | None = None,
         pageOffset: int | float = 0,
     ) -> list[Any]:
-        # TODO: Got to be a cleaner way to do this
+        """A recursive function to query endpoints by offsets"""
 
         getParams = {"limit": POST_LIMIT, "order": "desc"}
         if paramOverride is not None:
