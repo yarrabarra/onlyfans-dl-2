@@ -69,7 +69,7 @@ class SubscribedByData(BaseModel):
     discountFinishedAt: Any
     discountStartedAt: Any
     status: Any
-    isMuted: bool
+    isMuted: Optional[bool] = False
     unsubscribeReason: str
     duration: str
     showPostsInFeed: bool
@@ -107,7 +107,7 @@ class Profile(BaseModel):
     isPaywallRequired: bool
     unprofitable: bool
     listsStates: List[ListsState]
-    isMuted: bool
+    isMuted: Optional[bool] = False
     isRestricted: bool
     canRestrict: bool
     subscribedBy: bool
@@ -164,5 +164,5 @@ class Profile(BaseModel):
     firstPublishedPostDate: datetime
     isSpringConnected: bool
     isFriend: bool
-    isBlocked: bool
+    isBlocked: Optional[bool] = False
     canReport: bool

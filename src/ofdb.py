@@ -20,23 +20,24 @@ def load_sql(name: str):
 
 
 class OFDB:
-    db_name = "data_ofd.db"
+    db_path: str
 
-    def __init__(self):
+    def __init__(self, db_path="data_ofd.db"):
+        self.db_path = db_path
         log.info("Opening DB connection...")
         self.create_db_if_not_exists()
-        self.db = sqlite3.connect(self.db_name)
+        self.db = sqlite3.connect(self.db_path)
         self.db.row_factory = dict_factory
         log.info("DB connection opened.")
 
     def create_db_if_not_exists(self):
-        if not os.path.exists(self.db_name):
+        if not os.path.exists(self.db_path):
             dlc_table_sql = load_sql("dlc_table")
             dlc_trigger_sql = load_sql("dlc_trigger")
             dlf_table_sql = load_sql("dlf_table")
             dlf_trigger_sql = load_sql("dlf_trigger")
 
-            db = sqlite3.connect(self.db_name)
+            db = sqlite3.connect(self.db_path)
             cur = db.cursor()
             cur.execute(dlc_table_sql)
             cur.execute(dlc_trigger_sql)

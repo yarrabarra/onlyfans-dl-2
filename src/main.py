@@ -31,6 +31,7 @@ def setup_logger(loglevel="INFO"):
 @click.option("--subscriptions", default="all", help="Which subscription usernames to query")
 @click.option("--loglevel", default="INFO", help="Log level for logging")
 @click.option("--max-post-days", default=14, help="Maximum number of days to go back for posts")
+@click.option("--session-vars-path", default="session_vars.json", help="Path to the set of session vars to use")
 @click.option(
     "--albums",
     default=False,

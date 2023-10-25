@@ -38,6 +38,7 @@ pytest = "^7.4.2"
 pytest-cov = "^4.1.0"
 xsdata-pydantic = { extras = ["cli"], version = "^22.10" }
 freezegun = "^1.2.2"
+requests-mock = "^1.11.0"
 
 [build-system]
 requires = ["poetry-core"]
