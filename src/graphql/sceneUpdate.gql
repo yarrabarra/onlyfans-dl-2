@@ -1,0 +1,16 @@
+mutation SceneUpdate($input: SceneUpdateInput!) {
+      sceneUpdate(input: $input) {
+        ...SceneData
+    __typename
+    }
+}
+
+fragment SceneData on Scene {
+  id
+  details
+  tags {
+    id
+    name
+  }
+  __typename
+}

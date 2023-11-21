@@ -1,133 +1,92 @@
-import sqlite3
-import os
+from datetime import datetime
 
-from pathlib import Path
 from loguru import logger as log
+from models.post_sql import Content, Tag, ContentTagLink, Media
+from models.messages import Message
+from models.media import MediaItem
+from models.post import Post
+from models.purchase import Purchase
+from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel.sql.expression import SelectOfScalar
 
-script_dir = Path(__file__).absolute().parent
-
-
-def dict_factory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
-
-
-def load_sql(name: str):
-    with open(script_dir / f"sql/{name}.sql") as sqlFile:
-        return sqlFile.read()
+ContentType = Message | Post | Purchase
 
 
 class OFDB:
     db_path: str
 
     def __init__(self, db_path="data_ofd.db"):
-        self.db_path = db_path
-        log.info("Opening DB connection...")
-        self.create_db_if_not_exists()
-        self.db = sqlite3.connect(self.db_path)
-        self.db.row_factory = dict_factory
-        log.info("DB connection opened.")
+        self.db_path = f"sqlite:///{db_path}"
+        log.info(f"Creating database: {self.db_path}")
+        self.engine = create_engine(self.db_path)
+        SQLModel.metadata.create_all(self.engine)
 
-    def create_db_if_not_exists(self):
-        if not os.path.exists(self.db_path):
-            dlc_table_sql = load_sql("dlc_table")
-            dlc_trigger_sql = load_sql("dlc_trigger")
-            dlf_table_sql = load_sql("dlf_table")
-            dlf_trigger_sql = load_sql("dlf_trigger")
+    def _upsert(self, item, statement: SelectOfScalar):
+        with Session(self.engine) as session:
+            result = session.exec(statement).first()
 
-            db = sqlite3.connect(self.db_path)
-            cur = db.cursor()
-            cur.execute(dlc_table_sql)
-            cur.execute(dlc_trigger_sql)
-            cur.execute(dlf_table_sql)
-            cur.execute(dlf_trigger_sql)
+            if result is None:
+                result = item
 
-            db.commit()
-            cur.close()
-            db.close()
+            for key, value in item.model_dump(exclude_unset=True).items():
+                setattr(result, key, value)
+            session.add(result)
+            session.commit()
+            session.refresh(result)
+            return result
 
-    def check_db(self, source):
-        cur_ck = self.db.cursor()
+    def _update(self, item):
+        with Session(self.engine) as session:
+            session.add(item)
+            session.commit()
+            session.refresh(item)
+            return item
 
-        check_cleared_sql = "SELECT count(dlc_id) AS dlc_count FROM downloads_cleared WHERE source = ?;"
-        check_failed_sql = "SELECT count(dlf_id) AS dlf_count FROM downloads_failed WHERE source = ? AND status = 'a';"
-
-        res_c = cur_ck.execute(check_cleared_sql, (source,)).fetchone()
-        res_f = cur_ck.execute(check_failed_sql, (source,)).fetchone()
-
-        count_c = res_c["dlc_count"]
-        count_f = res_f["dlf_count"]
-        total = count_c + count_f
-
-        if total == 0:
-            return False
-
-        elif total == 1:
-            return True
-        else:
-            err = f"Error in DB rows for source: {source} | Rows found: {total}"
-            log.critical(err)
-            raise (RuntimeError(err))
-
-    def close_db(self):
-        log.info("Closing DB...")
-        self.db.close()
-        log.info("DB closed.")
-
-    def insert_into_downloads_cleared(
-        self,
-        source,
-        remote_file_size,
-        remote_file_hash,
-        local_file_size,
-        local_file_hash,
-    ):
-        cur_c = self.db.cursor()
-
-        insert_sql_c = load_sql("insert_sql_c")
-
-        cur_c.execute(
-            insert_sql_c,
-            (
-                source,
-                remote_file_size,
-                remote_file_hash,
-                local_file_size,
-                local_file_hash,
-            ),
+    def upsert_content(self, content: ContentType):
+        profile_id = content.get_profile_id()
+        if profile_id is None:
+            return
+        statement = select(Content).where(Content.id == content.id)  # type: ignore
+        item = Content(
+            id=content.id,
+            profile_id=profile_id,
+            date=datetime.strptime(content.get_date(), "%Y-%m-%d"),
+            text=content.text,
         )
-        self.db.commit()
+        self._upsert(item, statement)
 
-        cur_c.close()
+    def upsert_tags(self, tags):
+        tag_results = []
+        for tag in tags:
+            item = Tag(name=tag)
+            statement = select(Tag).where(Tag.name == tag)
+            result = self._upsert(item, statement)
+            tag_results.append(result)
+        return tag_results
 
-    def insert_into_downloads_failed(
-        self,
-        source,
-        remote_file_size,
-        remote_file_hash,
-        local_file_size,
-        local_file_hash,
-        error,
-        headers,
+    def link_tags_to_post(self, tags: list[Tag], content: Content):
+        content.tags = tags
+        self._update(content)
+
+        # for tag in tags:
+        #     if tag is None:
+        #         continue
+        #     item = ContentTagLink(tag_id=tag, content_id=content.id)
+        #     statement = select(ContentTagLink).where(
+        #         ContentTagLink.tag_id == tag and ContentTagLink.content_id == content.id  # type: ignore
+        #     )
+        #     self._upsert(item, statement)
+
+    def upsert_media_item(
+        self, file_path: str, profile_id: int, media: MediaItem, mediaType: str, postdate: str, album="", post_id=0
     ):
-        cur_f = self.db.cursor()
-
-        insert_sql_f = load_sql("insert_sql_f")
-
-        cur_f.execute(
-            insert_sql_f,
-            (
-                source,
-                remote_file_size,
-                remote_file_hash,
-                local_file_size,
-                local_file_hash,
-                error,
-                headers,
-            ),
+        item = Media(
+            file_path=file_path,
+            profile_id=profile_id,
+            id=media.id,
+            content_id=post_id,
+            media_type=mediaType,
+            postdate=datetime.strptime(postdate, "%Y-%m-%d"),
         )
-        self.db.commit()
-
-        cur_f.close()
+        statement = select(Media).where(Media.id == media.id)  # type: ignore
+        self._upsert(item, statement)

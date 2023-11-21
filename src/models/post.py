@@ -62,10 +62,13 @@ class Post(BaseModel):
     canViewMedia: bool
     preview: list
 
-    def get_postdate(self):
+    def get_date(self):
         if self.postedAt is None:
             return "1970-01-01"  # Epoch failsafe if date is not present
         return self.postedAt.strftime("%Y-%m-%d")
 
     def is_viewable(self):
         return self.canViewMedia
+
+    def get_profile_id(self):
+        return self.author.id

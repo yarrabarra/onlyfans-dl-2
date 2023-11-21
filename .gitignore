@@ -20,3 +20,4 @@ htmlcov
 .env
 .coverage
 coverage.xml
+.special_tags.txt
