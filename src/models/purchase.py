@@ -1,13 +1,12 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel
-
+from .base_content import BaseContent
 from .profile import Profile
 from .media import MediaItem
 
 
-class Purchase(BaseModel):
+class Purchase(BaseContent):
     responseType: str
     text: str
     giphyId: Any
@@ -41,7 +40,12 @@ class Purchase(BaseModel):
             return False
         return True
 
-    def get_postdate(self):
+    def get_date(self):
         if self.createdAt is None:
             return "1970-01-01"  # Epoch failsafe if date is not present
         return self.createdAt.strftime("%Y-%m-%d")
+
+    def get_profile_id(self):
+        if self.fromUser is None:
+            return None
+        return self.fromUser.id

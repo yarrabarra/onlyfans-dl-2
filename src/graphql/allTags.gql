@@ -1,0 +1,6 @@
+query AllTags() {
+  allTags() {
+    id: id
+    name: name
+  }
+}

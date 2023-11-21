@@ -13,10 +13,12 @@ pydantic = "^2.3.0"
 requests = "^2.31.0"
 api-client = "^1.3.1"
 pyinstaller-hooks-contrib = "^2023.8"
+sqlmodel = { git = "https://github.com/mbsantiago/sqlmodel.git", branch = "main" }
 xmltodict = "^0.13.0"
 
 xsdata-pydantic = { extras = ["cli"], version = "^22.10" }
 pydantic-settings = "^2.0.3"
+yake = "^0.4.8"
 
 [tool.poetry.group.drm.dependencies]
 pywidevine = { version = "^1.6.0" }

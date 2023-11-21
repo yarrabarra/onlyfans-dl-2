@@ -1,23 +1,16 @@
 import os
 import pathlib
 import shutil
-
 from urllib.parse import urlparse
 
 import requests
-from loguru import logger as log
-from rake_nltk import Rake
-
-from models.profile import Profile
-from models.media import MediaItem
-from models.purchase import Purchase
-from models.post import Post
-from models.messages import Message
-
-from windows_metadata import set_metadata
-from ofdb import OFDB
-from ofapi import OFClient, OFDRMClient
 import util
+from loguru import logger as log
+from models.media import MediaItem
+from models.profile import Profile
+from models.purchase import Purchase
+from ofapi import OFClient, OFDRMClient
+from ofdb import OFDB
 
 DRM_SUPPORT = False
 POSTS_LIMIT = 50
@@ -34,7 +27,6 @@ class OFDownloader:
         # Options
         self.albums = False  #
         self.use_subfolders = True  #
-        self.enable_tags = False
         self.processed_count = 0
         self.new_files: dict[str, list[str]] = {}
 
@@ -50,7 +42,7 @@ class OFDownloader:
             path = os.path.join(mediaType, path)
         return path
 
-    def retrieve_file(self, source: str, dest: str):
+    def retrieve_file(self, source: str, dest: pathlib.Path):
         path = pathlib.Path(dest)
         if path.exists():
             return False
@@ -64,44 +56,35 @@ class OFDownloader:
 
     def download_media(
         self, subscription: Profile, media: MediaItem, mediaType: str, postdate: str, album="", post_id=0
-    ):
+    ) -> tuple[pathlib.Path | None, bool]:
+        # TODO: This is very messy, needs to be extracted into components
         source = media.get_source()
         if source is None:
             log.debug(f"No source or files for media {media.id}")
-            return None
+            return None, False
         if not media.is_downloadable():
-            return None
+            return None, False
         if media.is_drm():
             if not DRM_SUPPORT:
-                return None
+                return None, False
             pssh = util.parse_pssh_from_mpd(source)
             if pssh is None:
-                return None
+                return None, False
             license = self.drm.get_drm_license(pssh, media.id, post_id)
             exit()
 
         path = self._get_media_path(media, mediaType, album, postdate, source)
-        final_path = os.path.join("subscriptions", subscription.username, path)
+        final_path = pathlib.Path("subscriptions") / subscription.username / path
         # TODO: Remove hack to avoid double downloads until local DB is implemented
         if mediaType == "messages":
-            purchasedPath = pathlib.Path(final_path.replace("messages", "purchased")).parent
+            purchasedPath = pathlib.Path(str(final_path).replace("messages", "purchased")).parent
             for matchPath in purchasedPath.glob(f"*_{media.id}*"):
                 if matchPath.exists():
                     log.debug(f"Skipping {path} because already exists in {matchPath}")
-                    return None
+                    return matchPath, False
         if self.retrieve_file(source, final_path):
-            return final_path
-        return None
-
-    def tag_media(self, media: Message | Post | Purchase, path: str | None):
-        if not self.enable_tags or path is None or media.text is None:
-            return
-        text = util.cleanup_text(media.text)
-        rake = Rake()
-        rake.extract_keywords_from_text(text)
-        keywords = [item[0] for item in rake.get_ranked_phrases()[:20]]
-        set_metadata(path, "System.Keywords", keywords)
-        set_metadata(path, "System.Comment", text)
+            return final_path, True
+        return final_path, False
 
     def _get_posts(self, subscription: Profile, mediaType: str):
         if mediaType == "messages":
@@ -125,12 +108,11 @@ class OFDownloader:
                 if post.fromUser.username != subscription.username:
                     # Skip purchases that are not from the subscription we're querying
                     continue
-
-            postdate = post.get_postdate()
+            postdate = post.get_date()
             album = ""
             if len(post.media) > 1:  # Don't put single photo posts in a subfolder
                 album = str(post.id)  # Album ID
-
+            self.db.upsert_content(post)
             for media in post.media:
                 # TODO: Find a sub with stories
                 # if mediaType == "stories":
@@ -140,14 +122,15 @@ class OFDownloader:
                 if media.source.source is None and media.files is None:
                     log.info(f"No media source: {media.id}")
                     continue
-                path = self.download_media(subscription, media, mediaType, postdate, album, post.id)
+                path, is_new = self.download_media(subscription, media, mediaType, postdate, album, post.id)
                 self.processed_count += 1
                 if self.processed_count % 100 == 0:
                     log.info(f"Processed files: {self.processed_count}")
-                if path is not None:
+                if is_new:
                     self.new_files.setdefault(subscription.name, [])
-                    self.new_files[subscription.name].append(path)
-                self.tag_media(post, path)
+                    self.new_files[subscription.name].append(str(path))
+                if path is not None:
+                    self.db.upsert_media_item(str(path), subscription.id, media, mediaType, postdate, album, post.id)
 
         log.info(f"Total files processed: {self.processed_count}")
         return True
@@ -157,29 +140,26 @@ class OFDownloader:
 
     @log.catch
     def run(self, target: str, subscriptions):
-        try:
-            subscription_list = self.api.get_subscriptions()
+        subscription_list = self.api.get_subscriptions()
 
-            log.info(f"Subscriptions: {subscription_list}")
-            for subscription in subscription_list:
-                if subscriptions != "all":
-                    if subscription.username not in subscriptions.split(","):
-                        log.debug(f"Not part of subscription targets, skipping {subscription.username}")
-                        continue
-                subs_dir = os.path.join("subscriptions", subscription.username)
-                if os.path.isdir(subs_dir):
-                    log.info(f"{subscription.username} exists. Downloading new media, skipping pre-existing.")
-                else:
-                    log.info(f" New subscription, downloading content to {subs_dir}")
-                if target == "all":
-                    # TODO: Archived/stories
-                    # self.get_content(subscription, "archived")
-                    # self.get_content(subscription, "stories")
-                    self.get_content(subscription, "posts")
-                    self.get_content(subscription, "purchased")
-                    self.get_content(subscription, "messages")
+        log.info(f"Subscriptions: {subscription_list}")
+        for subscription in subscription_list:
+            if subscriptions != "all":
+                if subscription.username not in subscriptions.split(","):
+                    log.debug(f"Not part of subscription targets, skipping {subscription.username}")
                     continue
-                self.get_content(subscription, target)
-            return True
-        finally:
-            self.db.close_db()
+            subs_dir = os.path.join("subscriptions", subscription.username)
+            if os.path.isdir(subs_dir):
+                log.info(f"{subscription.username} exists. Downloading new media, skipping pre-existing.")
+            else:
+                log.info(f" New subscription, downloading content to {subs_dir}")
+            if target == "all":
+                # TODO: Archived/stories
+                # self.get_content(subscription, "archived")
+                # self.get_content(subscription, "stories")
+                self.get_content(subscription, "posts")
+                self.get_content(subscription, "purchased")
+                self.get_content(subscription, "messages")
+                continue
+            self.get_content(subscription, target)
+        return True

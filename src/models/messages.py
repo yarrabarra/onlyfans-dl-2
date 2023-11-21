@@ -5,9 +5,10 @@ from pydantic import BaseModel
 
 from .media import MediaItem
 from .profile import Profile
+from .base_content import BaseContent
 
 
-class Message(BaseModel):
+class Message(BaseContent):
     responseType: str
     text: str
     giphyId: Any
@@ -42,10 +43,13 @@ class Message(BaseModel):
     def is_viewable(self):
         return True
 
-    def get_postdate(self):
+    def get_date(self):
         if self.createdAt is None:
             return "1970-01-01"  # Epoch failsafe if date is not present
         return self.createdAt.strftime("%Y-%m-%d")
+
+    def get_profile_id(self):
+        return self.fromUser.id
 
 
 class MessageList(BaseModel):
