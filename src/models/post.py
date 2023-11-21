@@ -1,78 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Optional
 
 from pydantic import BaseModel
 
 from .media import MediaItem
-
-
-class AvatarThumbs(BaseModel):
-    c50: str
-    c144: str
-
-
-class HeaderSize(BaseModel):
-    width: int
-    height: int
-
-
-class HeaderThumbs(BaseModel):
-    w480: str
-    w760: str
-
-
-class SubscriptionBundle(BaseModel):
-    id: int
-    discount: int
-    duration: int
-    price: Decimal
-    canBuy: bool
-
-
-class Author(BaseModel):
-    avatar: str
-    avatarThumbs: AvatarThumbs
-    canAddSubscriber: bool
-    canCommentStory: bool
-    canEarn: bool
-    canLookStory: bool
-    canPayInternal: bool
-    canRestrict: bool
-    canTrialSend: bool
-    currentSubscribePrice: Decimal
-    hasNotViewedStory: bool
-    hasScheduledStream: bool
-    hasStories: bool
-    hasStream: bool
-    header: str
-    headerSize: HeaderSize
-    headerThumbs: HeaderThumbs
-    id: int
-    isMuted: Optional[bool] = False
-    isPaywallRequired: bool
-    isRestricted: bool
-    isVerified: bool
-    name: str
-    showPostsInFeed: bool
-    subscribedBy: bool
-    subscribedByAutoprolong: bool
-    subscribedByExpire: bool
-    subscribedByExpireDate: datetime
-    subscribedIsExpiredNow: bool
-    subscribedOn: bool
-    subscribedOnDuration: Any
-    subscribedOnExpiredNow: Any
-    subscribePrice: Decimal
-    subscriptionBundles: list[SubscriptionBundle]
-    tipsEnabled: bool
-    tipsMax: int
-    tipsMin: int
-    tipsMinInternal: int
-    tipsTextEnabled: bool
-    unprofitable: bool
-    username: str
-    view: str
+from .profile import Profile
 
 
 class Option(BaseModel):
@@ -93,8 +26,8 @@ class Post(BaseModel):
     id: int
     postedAt: Optional[datetime] = None
     postedAtPrecise: str
-    expiredAt: Any
-    author: Author
+    expiredAt: datetime | None = None
+    author: Profile
     text: str
     rawText: str
     lockedText: bool
@@ -110,8 +43,8 @@ class Post(BaseModel):
     voting: Voting | list
     isOpened: bool
     canToggleFavorite: bool
-    streamId: Any
-    price: Any
+    streamId: str | None = None
+    price: Decimal | None = None
     hasVoting: bool
     isAddedToBookmarks: bool
     isArchived: bool

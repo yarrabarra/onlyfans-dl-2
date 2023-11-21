@@ -8,7 +8,7 @@ import requests
 from loguru import logger as log
 from rake_nltk import Rake
 
-from models.subscriptions import Subscription
+from models.profile import Profile
 from models.media import MediaItem
 from models.purchase import Purchase
 from models.post import Post
@@ -63,7 +63,7 @@ class OFDownloader:
         return True
 
     def download_media(
-        self, subscription: Subscription, media: MediaItem, mediaType: str, postdate: str, album="", post_id=0
+        self, subscription: Profile, media: MediaItem, mediaType: str, postdate: str, album="", post_id=0
     ):
         source = media.get_source()
         if source is None:
@@ -103,7 +103,7 @@ class OFDownloader:
         set_metadata(path, "System.Keywords", keywords)
         set_metadata(path, "System.Comment", text)
 
-    def _get_posts(self, subscription: Subscription, mediaType: str):
+    def _get_posts(self, subscription: Profile, mediaType: str):
         if mediaType == "messages":
             posts = self.api.get_messages(subscription)
         elif mediaType in "purchased":
@@ -114,7 +114,7 @@ class OFDownloader:
             raise NotImplementedError(f"Unhandled mediaType: {mediaType}")
         return posts
 
-    def get_content(self, subscription: Subscription, mediaType: str):
+    def get_content(self, subscription: Profile, mediaType: str):
         self.processed_count = 0  # Reset to zero
         posts = self._get_posts(subscription, mediaType)
         log.info("Found " + str(len(posts)) + " " + mediaType)
