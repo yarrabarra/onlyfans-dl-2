@@ -1,88 +1,10 @@
 from datetime import datetime
-from decimal import Decimal
 from typing import Any, Optional
 
 from pydantic import BaseModel
 
 from .media import MediaItem
-
-
-class AvatarThumbs(BaseModel):
-    c50: str
-    c144: str
-
-
-class HeaderSize(BaseModel):
-    width: int
-    height: int
-
-
-class HeaderThumbs(BaseModel):
-    w480: str
-    w760: str
-
-
-class SubscriptionBundle(BaseModel):
-    id: int
-    discount: int
-    duration: int
-    price: Decimal
-    canBuy: bool
-
-
-class ListsState(BaseModel):
-    id: str
-    type: str
-    name: str
-    hasUser: bool
-    canAddUser: bool
-
-
-class FromUser(BaseModel):
-    view: str
-    avatar: str
-    avatarThumbs: AvatarThumbs
-    header: str
-    headerSize: HeaderSize
-    headerThumbs: HeaderThumbs
-    id: int
-    name: str
-    username: str
-    canLookStory: bool
-    canCommentStory: bool
-    hasNotViewedStory: bool
-    isVerified: bool
-    canPayInternal: bool
-    hasScheduledStream: bool
-    hasStream: bool
-    hasStories: bool
-    tipsEnabled: bool
-    tipsTextEnabled: bool
-    tipsMin: int
-    tipsMinInternal: int
-    tipsMax: int
-    canEarn: bool
-    canAddSubscriber: bool
-    subscribePrice: Decimal
-    subscriptionBundles: list[SubscriptionBundle]
-    isPaywallRequired: bool
-    unprofitable: bool
-    listsStates: list[ListsState]
-    isMuted: Optional[bool] = False
-    isRestricted: bool
-    canRestrict: bool
-    subscribedBy: bool
-    subscribedByExpire: bool
-    subscribedByExpireDate: datetime
-    subscribedByAutoprolong: bool
-    subscribedIsExpiredNow: bool
-    currentSubscribePrice: Decimal
-    subscribedOn: Any
-    subscribedOnExpiredNow: Any
-    subscribedOnDuration: Any
-    callPrice: Decimal
-    lastSeen: Optional[str]
-    canReport: bool
+from .profile import Profile
 
 
 class Message(BaseModel):
@@ -100,7 +22,7 @@ class Message(BaseModel):
     isReportedByMe: bool
     isCouplePeopleMedia: bool
     queueId: int
-    fromUser: FromUser
+    fromUser: Profile
     isFromQueue: bool
     canUnsendQueue: Optional[bool] = None
     unsendSecondsQueue: Optional[int] = None

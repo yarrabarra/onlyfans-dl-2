@@ -4,6 +4,7 @@ import click
 from typing import Type, Literal, Any
 from datetime import datetime, timedelta
 from loguru import logger as log
+from pydantic import ValidationError
 
 from apiclient import APIClient, endpoint
 from apiclient.response_handlers import JsonResponseHandler
@@ -12,7 +13,6 @@ from models.messages import MessageList, Message
 from models.purchase import Purchase
 from models.profile import Profile
 from models.post import Post
-from models.subscriptions import Subscription
 
 from api.strategy import SignedRequestsStrategy
 
@@ -29,7 +29,7 @@ except Exception as e:
 POST_LIMIT = 50
 
 # Type Alias
-Offsetables = Subscription | Purchase | Post | MessageList
+Offsetables = Profile | Purchase | Post | MessageList
 
 
 def to_str(item: str | int | float):
@@ -95,7 +95,16 @@ class OFClient(APIClient):
         if isinstance(request, dict):
             base_list = [itemType.model_validate(request)]
         else:
-            base_list = [itemType.model_validate(item) for item in request]
+            base_list = []
+            # Iterate so we can catch and log individual failures
+            for item in request:
+                try:
+                    base_list.append(itemType.model_validate(item))
+                except ValidationError:
+                    from pprint import pprint
+
+                    pprint(item)
+                    raise
 
         items.extend(base_list)
         # Recursive query
@@ -115,13 +124,13 @@ class OFClient(APIClient):
             items.extend(self._get_by_offset(endpoint, itemType, pageType, paramOverride, items, pageOffset))
         return items
 
-    def get_subscriptions(self) -> list[Subscription]:
-        return self._get_by_offset(Endpoint.subscriptions, Subscription, "offset", {"type": "active"})
+    def get_subscriptions(self) -> list[Profile]:
+        return self._get_by_offset(Endpoint.subscriptions, Profile, "offset", {"type": "active"})
 
     def get_purchases(self) -> list[Purchase]:
         return self._get_by_offset(Endpoint.purchased, Purchase, "offset")
 
-    def get_posts(self, subscription: Subscription) -> list[Post]:
+    def get_posts(self, subscription: Profile) -> list[Post]:
         pageOffset = get_max_days_offset()
         return self._get_by_offset(
             Endpoint.posts.format(id=subscription.id),
@@ -131,7 +140,7 @@ class OFClient(APIClient):
             pageOffset=pageOffset,
         )
 
-    def get_messages(self, subscription: Subscription) -> list[Message]:
+    def get_messages(self, subscription: Profile) -> list[Message]:
         results = []
         response = self._get_by_offset(Endpoint.messages.format(id=subscription.id), MessageList, "id")
         for item in response:

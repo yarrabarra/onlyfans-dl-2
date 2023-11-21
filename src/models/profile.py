@@ -1,7 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, List, Optional
-
+from typing import List, Optional
 from pydantic import BaseModel
 
 
@@ -37,132 +36,146 @@ class ListsState(BaseModel):
 
 
 class Subscribe(BaseModel):
-    id: int
-    userId: int
-    subscriberId: int
+    action: str
+    cancelDate: datetime | None = None
     date: datetime
+    discount: int
     duration: int
-    startDate: datetime
-    expireDate: datetime
-    cancelDate: Any
+    earningId: int
+    expireDate: datetime | None = None
+    id: int
+    isCurrent: bool
+    offerEnd: datetime | None = None
+    offerStart: datetime | None = None
     price: Decimal
     regularPrice: Decimal
-    discount: int
-    earningId: int
-    action: str
+    startDate: datetime | None = None
+    subscriberId: int
     type: str
-    offerStart: Any
-    offerEnd: Any
-    isCurrent: bool
+    userId: int
 
 
 class SubscribedByData(BaseModel):
-    price: Decimal
-    newPrice: Decimal
-    regularPrice: Decimal
-    subscribePrice: Decimal
+    discountFinishedAt: datetime | None = None
     discountPercent: int
     discountPeriod: int
-    subscribeAt: datetime
-    expiredAt: datetime
-    renewedAt: Optional[datetime]
-    discountFinishedAt: Any
-    discountStartedAt: Any
-    status: Any
-    isMuted: Optional[bool] = False
-    unsubscribeReason: str
+    discountStartedAt: datetime | None = None
     duration: str
-    showPostsInFeed: bool
-    subscribes: List[Subscribe]
+    expiredAt: datetime
     hasActivePaidSubscriptions: bool
+    newPrice: Decimal
+    price: Decimal
+    regularPrice: Decimal
+    showPostsInFeed: bool | None = None
+    status: str | None = None
+    subscribeAt: datetime
+    subscribePrice: Decimal
+    subscribes: List[Subscribe]
+    unsubscribeReason: str
 
 
 class Profile(BaseModel):
-    view: str
-    avatar: str
-    avatarThumbs: AvatarThumbs
-    header: str
-    headerSize: HeaderSize
-    headerThumbs: HeaderThumbs
     id: int
-    name: str
+
+    avatar: str
+    header: str
     username: str
-    canLookStory: bool
-    canCommentStory: bool
-    hasNotViewedStory: bool
-    isVerified: bool
-    canPayInternal: bool
-    hasScheduledStream: bool
-    hasStream: bool
-    hasStories: bool
-    tipsEnabled: bool
-    tipsTextEnabled: bool
+    view: str
+    name: str
+
+    tipsMax: int
     tipsMin: int
     tipsMinInternal: int
-    tipsMax: int
-    canEarn: bool
+
     canAddSubscriber: bool
-    subscribePrice: Decimal
-    subscriptionBundles: List[SubscriptionBundle]
-    isPaywallRequired: bool
-    unprofitable: bool
-    listsStates: List[ListsState]
-    isMuted: Optional[bool] = False
-    isRestricted: bool
+    canCommentStory: bool
+    canEarn: bool
+    canLookStory: bool
+    canPayInternal: bool
     canRestrict: bool
-    subscribedBy: bool
-    subscribedByExpire: bool
-    subscribedByExpireDate: datetime
-    subscribedByAutoprolong: bool
+    hasNotViewedStory: bool
+    hasScheduledStream: bool
+    hasStories: bool
+    hasStream: bool
+    isPaywallRequired: bool
+    isRestricted: bool
+    isVerified: bool
     subscribedIsExpiredNow: bool
-    currentSubscribePrice: Decimal
-    subscribedOn: bool
-    subscribedOnExpiredNow: Any
-    subscribedOnDuration: Any
-    joinDate: datetime
-    isReferrerAllowed: bool
-    about: str
-    rawAbout: str
-    website: str
-    wishlist: Any
-    location: Any
-    postsCount: int
-    archivedPostsCount: int
-    privateArchivedPostsCount: int
-    photosCount: int
-    videosCount: int
-    audiosCount: int
-    mediasCount: int
-    lastSeen: datetime
-    favoritesCount: int
-    favoritedCount: int
-    showPostsInFeed: bool
-    canReceiveChatMessage: bool
-    isPerformer: bool
-    isRealPerformer: bool
-    isSpotifyConnected: bool
-    subscribersCount: Any
-    hasPinnedPosts: bool
-    hasLabels: bool
-    canChat: bool
-    callPrice: Decimal
-    isPrivateRestriction: bool
-    showSubscribersCount: bool
-    showMediaCount: bool
-    subscribedByData: SubscribedByData
-    subscribedOnData: Any
-    canPromotion: bool
-    canCreatePromotion: bool
-    canCreateTrial: bool
-    isAdultContent: bool
-    canTrialSend: bool
-    hadEnoughLastPhotos: bool
-    hasLinks: bool
-    finishedStreamsCount: int
-    shouldShowFinishedStreams: bool
-    hasSavedStreams: bool
-    firstPublishedPostDate: datetime
-    isSpringConnected: bool
-    isFriend: bool
-    isBlocked: Optional[bool] = False
-    canReport: bool
+    tipsEnabled: bool
+    tipsTextEnabled: bool
+    unprofitable: bool
+
+    subscribedByExpireDate: datetime
+    subscribePrice: Decimal
+
+    listsStates: List[ListsState] = []
+    subscriptionBundles: List[SubscriptionBundle] = []
+
+    avatarThumbs: AvatarThumbs
+    headerSize: HeaderSize
+    headerThumbs: HeaderThumbs
+
+    subscribedByData: SubscribedByData | None = None
+
+    callPrice: Decimal | None = None
+    currentSubscribePrice: Decimal | None = None
+
+    firstPublishedPostDate: datetime | None = None
+    joinDate: datetime | None = None
+    renewedAt: datetime | None = None
+
+    archivedPostsCount: int | None = None
+    audiosCount: int | None = None
+    finishedStreamsCount: int | None = None
+    mediasCount: int | None = None
+    photosCount: int | None = None
+    postsCount: int | None = None
+    privateArchivedPostsCount: int | None = None
+    subscribersCount: int | None = None
+    videosCount: int | None = None
+
+    location: str | None = None
+    subscribedOnData: SubscribedByData | None = None
+    subscribedOnDuration: str | None = None
+    subscribedOnExpiredNow: bool | None = None
+
+    about: str | None = None
+    lastSeen: str | None = None
+    rawAbout: str | None = None
+    website: str | None = None
+    wishlist: str | None = None
+
+    canChat: bool | None = None
+    canCreatePromotion: bool | None = None
+    canCreateTrial: bool | None = None
+    canPromotion: bool | None = None
+    canReceiveChatMessage: bool | None = None
+    canReport: bool | None = None
+    canTrialSend: bool | None = None
+    hadEnoughLastPhotos: bool | None = None
+    hasLabels: bool | None = None
+    hasLinks: bool | None = None
+    hasPinnedPosts: bool | None = None
+    hasSavedStreams: bool | None = None
+    hideChat: bool | None = None
+    isAdultContent: bool | None = None
+    isBlocked: bool | None = None
+    isFriend: bool | None = None
+    isMuted: bool | None = None
+    isPerformer: bool | None = None
+    isPrivateRestriction: bool | None = None
+    isRealPerformer: bool | None = None
+    isReferrerAllowed: bool | None = None
+    isSpotifyConnected: bool | None = None
+    isSpringConnected: bool | None = None
+    shouldShowFinishedStreams: bool | None = None
+    showMediaCount: bool | None = None
+    showPostsInFeed: bool | None = None
+    showSubscribersCount: bool | None = None
+    subscribedBy: bool | None = None
+    subscribedByAutoprolong: bool | None = None
+    subscribedByExpire: bool | None = None
+    subscribedOn: bool | None = None
+
+    def __repr__(self):
+        return f"{self.id} - {self.name}"

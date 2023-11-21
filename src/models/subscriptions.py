@@ -5,37 +5,6 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
-class AvatarThumbs(BaseModel):
-    c50: str
-    c144: str
-
-
-class HeaderSize(BaseModel):
-    width: int
-    height: int
-
-
-class HeaderThumbs(BaseModel):
-    w480: str
-    w760: str
-
-
-class SubscriptionBundle(BaseModel):
-    id: int
-    discount: int
-    duration: int
-    price: Decimal
-    canBuy: bool
-
-
-class ListsState(BaseModel):
-    id: str
-    type: str
-    name: str
-    hasUser: bool
-    canAddUser: bool
-
-
 class Subscribe(BaseModel):
     id: int
     userId: int
@@ -72,63 +41,6 @@ class SubscribedByData(BaseModel):
     isMuted: Optional[bool] = False
     unsubscribeReason: str
     duration: str
-    showPostsInFeed: bool
+    showPostsInFeed: bool | None = None
     subscribes: List[Subscribe]
     hasActivePaidSubscriptions: bool
-
-
-class Subscription(BaseModel):
-    view: str
-    avatar: str
-    avatarThumbs: AvatarThumbs
-    header: str
-    headerSize: HeaderSize
-    headerThumbs: HeaderThumbs
-    id: int
-    name: str
-    username: str
-    canLookStory: bool
-    canCommentStory: bool
-    hasNotViewedStory: bool
-    isVerified: bool
-    canPayInternal: bool
-    hasScheduledStream: bool
-    hasStream: bool
-    hasStories: bool
-    tipsEnabled: bool
-    tipsTextEnabled: bool
-    tipsMin: int
-    tipsMinInternal: int
-    tipsMax: int
-    canEarn: bool
-    canAddSubscriber: bool
-    subscribePrice: Decimal
-    subscriptionBundles: List[SubscriptionBundle]
-    isPaywallRequired: bool
-    unprofitable: bool
-    listsStates: List[ListsState]
-    isMuted: Optional[bool] = False
-    isRestricted: bool
-    canRestrict: bool
-    subscribedBy: bool
-    subscribedByExpire: bool
-    subscribedByExpireDate: datetime
-    subscribedByAutoprolong: bool
-    subscribedIsExpiredNow: bool
-    currentSubscribePrice: Decimal
-    subscribedOn: bool
-    subscribedOnExpiredNow: Any
-    subscribedOnDuration: Any
-    canReport: bool
-    canReceiveChatMessage: bool
-    hideChat: bool
-    lastSeen: str | None
-    isPerformer: bool
-    isRealPerformer: bool
-    subscribedByData: SubscribedByData
-    subscribedOnData: Any
-    canTrialSend: bool
-    isBlocked: Optional[bool] = False
-
-    def __repr__(self):
-        return f"{self.id} - {self.name}"
