@@ -24,7 +24,6 @@ class OFDB:
     def _upsert(self, item, statement: SelectOfScalar):
         with Session(self.engine) as session:
             result = session.exec(statement).first()
-
             if result is None:
                 result = item
 

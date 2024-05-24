@@ -21,3 +21,5 @@ htmlcov
 .coverage
 coverage.xml
 .special_tags.txt
+*.prof
+

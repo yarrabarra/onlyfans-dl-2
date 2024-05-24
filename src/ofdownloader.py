@@ -130,6 +130,8 @@ class OFDownloader:
                     self.new_files.setdefault(subscription.name, [])
                     self.new_files[subscription.name].append(str(path))
                 if path is not None:
+                    # if not media.id == "3118351114":
+                    #     continue
                     self.db.upsert_media_item(str(path), subscription.id, media, mediaType, postdate, album, post.id)
 
         log.info(f"Total files processed: {self.processed_count}")

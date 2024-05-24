@@ -28,7 +28,7 @@ class SubscriptionBundle(BaseModel):
 
 
 class ListsState(BaseModel):
-    id: str
+    id: int | str
     type: str
     name: str
     hasUser: bool
@@ -77,8 +77,8 @@ class SubscribedByData(BaseModel):
 class Profile(BaseModel):
     id: int
 
-    avatar: str
-    header: str
+    avatar: str | None = None
+    header: str | None = None
     username: str
     view: str
     name: str
@@ -92,28 +92,28 @@ class Profile(BaseModel):
     canEarn: bool
     canLookStory: bool
     canPayInternal: bool
-    canRestrict: bool
+    canRestrict: bool | None = None
     hasNotViewedStory: bool
     hasScheduledStream: bool
     hasStories: bool
     hasStream: bool
-    isPaywallRequired: bool
-    isRestricted: bool
+    isPaywallRequired: bool | None = None
+    isRestricted: bool | None = None
     isVerified: bool
-    subscribedIsExpiredNow: bool
+    subscribedIsExpiredNow: bool | None = None
     tipsEnabled: bool
     tipsTextEnabled: bool
     unprofitable: bool
 
-    subscribedByExpireDate: datetime
+    subscribedByExpireDate: datetime | None = None
     subscribePrice: Decimal
 
     listsStates: List[ListsState] = []
     subscriptionBundles: List[SubscriptionBundle] = []
 
-    avatarThumbs: AvatarThumbs
-    headerSize: HeaderSize
-    headerThumbs: HeaderThumbs
+    avatarThumbs: AvatarThumbs | None = None
+    headerSize: HeaderSize | None = None
+    headerThumbs: HeaderThumbs | None = None
 
     subscribedByData: SubscribedByData | None = None
 

@@ -1,0 +1,18 @@
+query JobQueue {
+      jobQueue {
+        ...JobData
+    __typename
+  }
+}
+
+fragment JobData on Job {
+  id
+  status
+  subTasks
+  description
+  progress
+  startTime
+  endTime
+  addTime
+  __typename
+}
