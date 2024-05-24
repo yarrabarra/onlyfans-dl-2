@@ -22,45 +22,45 @@ class Voting(BaseModel):
 
 
 class Post(BaseModel):
-    responseType: str
+    author: Profile
+    canComment: bool
+    canDelete: bool | None = None
+    canEdit: bool | None = None
+    canReport: bool
+    canToggleFavorite: bool
+    canViewMedia: bool
+    commentsCount: int | None = None
+    expiredAt: datetime | None = None
+    favoritesCount: int
+    hasUrl: bool | None = None
+    hasVoting: bool | None = None
     id: int
+    isAddedToBookmarks: bool | None = None
+    isArchived: bool | None = None
+    isCouplePeopleMedia: bool | None = None
+    isDeleted: bool | None = None
+    isFavorite: bool | None = None
+    isMediaReady: bool
+    isOpened: bool
+    isPinned: bool | None = None
+    isPrivateArchived: bool | None = None
+    linkedPosts: list = []
+    linkedUsers: list = []
+    lockedText: bool | None = None
+    media: list[MediaItem]
+    mediaCount: int
+    mentionedUsers: list | None = None
     postedAt: Optional[datetime] = None
     postedAtPrecise: str
-    expiredAt: datetime | None = None
-    author: Profile
-    text: str
-    rawText: str
-    lockedText: bool
-    isFavorite: bool
-    canReport: bool
-    canDelete: bool
-    canComment: bool
-    canEdit: bool
-    isPinned: bool
-    favoritesCount: int
-    mediaCount: int
-    isMediaReady: bool
-    voting: Voting | list
-    isOpened: bool
-    canToggleFavorite: bool
-    streamId: str | None = None
+    preview: list = []
     price: Decimal | None = None
-    hasVoting: bool
-    isAddedToBookmarks: bool
-    isArchived: bool
-    isPrivateArchived: bool
-    isDeleted: bool
-    hasUrl: bool
-    isCouplePeopleMedia: bool
-    commentsCount: int
-    mentionedUsers: list
-    linkedUsers: list
-    linkedPosts: list
+    rawText: str
+    responseType: str
+    streamId: str | None = None
+    text: str
     tipsAmount: str
-    tipsAmountRaw: Decimal
-    media: list[MediaItem]
-    canViewMedia: bool
-    preview: list
+    tipsAmountRaw: Decimal | None = None
+    voting: Voting | list | None = None
 
     def get_date(self):
         if self.postedAt is None:

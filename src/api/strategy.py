@@ -25,12 +25,12 @@ def _get_api_headers() -> dict[str, str]:
         "User-Agent": session_vars["USER_AGENT"],
         "x-bc": str(session_vars["X_BC"]),
         "user-id": str(session_vars["USER_ID"]),
-        "Cookie": f"auh_id={str(session_vars['USER_ID'])}; sess={session_vars['SESS_COOKIE']}",
+        "Cookie": f"auth_id={str(session_vars['USER_ID'])}; sess={session_vars['SESS_COOKIE']}",
     }
 
 
 def _get_dynamic_rules() -> DynamicRule:
-    DYNAMIC_RULE_URL = "https://raw.githubusercontent.com/DIGITALCRIMINALS/dynamic-rules/main/onlyfans.json"
+    DYNAMIC_RULE_URL = "https://raw.githubusercontent.com/DATAHOARDERS/dynamic-rules/main/onlyfans.json"
     result = requests.get(DYNAMIC_RULE_URL).json()
     return DynamicRule.model_validate(result)
 
