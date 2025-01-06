@@ -7,6 +7,7 @@ from sqlmodel import Session, select
 from pathlib import Path
 from time import sleep
 from loguru import logger as log
+from requests.exceptions import HTTPError
 
 
 def load_gql(query_name):
@@ -35,7 +36,11 @@ class GQLAPI:
 
     def _gql(self, data):
         request = self.session.post(self.graphql_url, json=data, headers=self.headers)
-        request.raise_for_status()
+        try:
+            request.raise_for_status()
+        except HTTPError:
+            log.info(dict(url=self.graphql_url, json=data, headers=self.headers))
+            raise
         return request.json().get("data", {})
 
     def metadata_scan(self) -> dict[str, int]:
@@ -77,13 +82,13 @@ class GQLAPI:
         return data
 
     def get_tags(self):
-        all_tags_query = {
-            "operationName": "AllTags",
-            "variables": {},
-            "query": load_gql("allTags"),
+        query = {
+            "operationName": "FindTags",
+            "variables": {"filter": {"per_page": 1000}},
+            "query": load_gql("findTags"),
         }
-        data = self._gql(all_tags_query)
-        for item in data["allTags"]:
+        data = self._gql(query)
+        for item in data["findTags"]["tags"]:
             self.tags[item["name"]] = str(item["id"])
 
     def find_scenes(self):
@@ -108,6 +113,19 @@ class GQLAPI:
         }
         data = self._gql(create_tag_query)
         self.tags[name] = data["tagCreate"]["id"]
+        return data
+
+    def delete_tag(self, name):
+        tag_id = self.tags.get(name)
+        if name is None:
+            return
+        delete_tag_query = {
+            "operationName": "TagDestroy",
+            "variables": {"id": tag_id},
+            "query": load_gql("destroyTag"),
+        }
+        data = self._gql(delete_tag_query)
+        del self.tags[name]
         return data
 
     def update_scene(self, scene_id: int, content: Content):

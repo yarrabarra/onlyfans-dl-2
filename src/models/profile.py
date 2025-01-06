@@ -103,7 +103,7 @@ class Profile(BaseModel):
     subscribedIsExpiredNow: bool | None = None
     tipsEnabled: bool
     tipsTextEnabled: bool
-    unprofitable: bool
+    unprofitable: bool | None = None
 
     subscribedByExpireDate: datetime | None = None
     subscribePrice: Decimal

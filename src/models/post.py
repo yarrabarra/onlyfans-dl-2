@@ -31,7 +31,7 @@ class Post(BaseModel):
     canViewMedia: bool
     commentsCount: int | None = None
     expiredAt: datetime | None = None
-    favoritesCount: int
+    favoritesCount: int | None = None
     hasUrl: bool | None = None
     hasVoting: bool | None = None
     id: int
@@ -47,14 +47,14 @@ class Post(BaseModel):
     linkedPosts: list = []
     linkedUsers: list = []
     lockedText: bool | None = None
-    media: list[MediaItem]
-    mediaCount: int
+    media: list[MediaItem] = []
+    mediaCount: int = 0
     mentionedUsers: list | None = None
     postedAt: Optional[datetime] = None
     postedAtPrecise: str
     preview: list = []
     price: Decimal | None = None
-    rawText: str
+    rawText: str | None = None
     responseType: str
     streamId: str | None = None
     text: str
