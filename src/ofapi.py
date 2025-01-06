@@ -92,8 +92,19 @@ class OFClient(APIClient):
 
         log.debug(f"Fetching endpoint {endpoint} - {pageType}: {pageOffset}")
         request = self.get(endpoint, getParams)
+        # TODO: Handle this hack better in "infinite" format?
+        # if isinstance(request, dict) and "list" in request:
+        #     request = request["list"]
+
         if isinstance(request, dict):
-            base_list = [itemType.model_validate(request)]
+            try:
+                base_list = [itemType.model_validate(request)]
+            except ValidationError:
+                with open(f"debug/validation_error/{pageType}.json", "w") as debug_result:
+                    import json
+
+                    json.dump(request, debug_result, indent=2)
+                    raise
         else:
             base_list = []
             # Iterate so we can catch and log individual failures

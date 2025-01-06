@@ -1,0 +1,3 @@
+mutation TagDestroy($id: ID!) {
+      tagDestroy(input: {id: $id})
+}

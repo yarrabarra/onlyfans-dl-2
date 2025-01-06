@@ -30,7 +30,7 @@ def _get_api_headers() -> dict[str, str]:
 
 
 def _get_dynamic_rules() -> DynamicRule:
-    DYNAMIC_RULE_URL = "https://raw.githubusercontent.com/DATAHOARDERS/dynamic-rules/main/onlyfans.json"
+    DYNAMIC_RULE_URL = "https://raw.githubusercontent.com/xagler/dynamic-rules/main/onlyfans.json"
     result = requests.get(DYNAMIC_RULE_URL).json()
     return DynamicRule.model_validate(result)
 

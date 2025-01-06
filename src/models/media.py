@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 
 
 class PreviewUrl(BaseModel):
-    url: str
+    url: str | None = None
 
 
 class Video(BaseModel):
@@ -43,6 +43,7 @@ class Drm(BaseModel):
 class Files(BaseModel):
     preview: Optional[PreviewUrl] = None
     source: Optional[PreviewUrl] = None
+    full: Optional[PreviewUrl] = None
     drm: Optional[Drm] = None
 
 
@@ -79,16 +80,16 @@ class MediaItem(BaseModel):
     files: Optional[Files] = None
     full: Optional[str] = None
     hasError: bool
-    info: Info
+    info: Info | None = None
     locked: Optional[Any] = None
     preview: Optional[str] = None
-    source: Source
+    source: Source | None = None
     squarePreview: Optional[str] = None
     src: Optional[str] = None
     thumb: Optional[str] = None
     type: str
     video: Optional[Video] = None
-    videoSources: VideoSources
+    videoSources: VideoSources | None = None
 
     def _get_drm_url(self):
         if self.files is None or self.files.drm is None:
@@ -116,12 +117,14 @@ class MediaItem(BaseModel):
         return True
 
     def get_source(self) -> Optional[str]:
-        if self.source.source is not None:
+        if self.source is not None and self.source.source is not None:
             return self.source.source
         if self.files is None:
             return None
         if self.is_drm():
             return self._get_drm_url()
+        if self.files.full is not None and self.files.full.url is not None:
+            return self.files.full.url
         if self.files.source is None:
             return None
         if self.files.source.url is not None:

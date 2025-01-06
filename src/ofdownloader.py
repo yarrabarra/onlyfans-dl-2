@@ -119,8 +119,7 @@ class OFDownloader:
                 #     postdate = str(media["createdAt"][:10])
                 if not media.canView:
                     continue
-                if media.source.source is None and media.files is None:
-                    log.info(f"No media source: {media.id}")
+                if media.get_source() is None:
                     continue
                 path, is_new = self.download_media(subscription, media, mediaType, postdate, album, post.id)
                 self.processed_count += 1
